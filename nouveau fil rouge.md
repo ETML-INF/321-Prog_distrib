@@ -20,7 +20,20 @@ Microservice: Annuaire
 Utiliser LWT pour maintenir la liste
 Faire plusieurs petites app 
 Microservice: banque
-Émission de monnaie signée 
-Microservice: fournir id pour émettre des chèques
+    - la banque crée des comptes. les comptes sont distribués manuellement aux élèves
+    - appels basiques:
+      - Solde de compte
+      - Transfert à un compte: retourne un reçu
+    - appels sérieux:
+      - Solde de compte: réponse si la demande est signée par le propriétaire du compte
+      - Transfert à un compte: vérification de la signature, retourne un reçu signé de la banque
+Microservice: Inventaire. Il contient N instances de chaque classe: casque, plastron, épaulière, gants, pantalons, bottes, arme. Tout est "distribué" aléatoirement, ce qui fait que quelqu'un pourrait avoir trois casques, mais ni gants ni bottes.
+    - appels basiques:
+      - Donne-moi la liste de mes objets
+      - Donne-moi un objet (je connais son id)
+      - Donne cet objet à untel
+    - appels sérieux:
+      - Je ne donne l'objet qu'après validaion du propriétaire
+      - Je ne transmets l'objet qu'après validation du propriétaire
 Microservice: vente de musique 
 Projet: player standalone avec achat legit ET pirate P2P
