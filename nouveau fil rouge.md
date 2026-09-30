@@ -1,14 +1,34 @@
-Consolidation OO: objet / classe  
-Consolidation OO: liste d'objets, retrouver un objet désérialisé  
-Consolidation OO: Constructeur (avec surcharge)  
-Consolidation OO: Propriétés  
-Chacun crée un personnage au lieu de maison: nom, niveau, pièces, avatar  
-Base de code : Contrôle "Persona Card", Mqtt et basta. Sans logger, pas de crypto project, pas d'idempotence ...  
+## Thématique "Je suis sensé savoir..."
+
+Objet / Classe / Static  
+Listes d'objets, retrouver un objet (Contains)  
+Constructeur (avec surcharge)  
+Propriétés  
+
+## Thématique (Dé)Sérialisation
+
+Chacun crée un personnage: nom, argent, équipement, avatar  
+Base de code : Contrôle "Persona Card", Mqtt et basta (Sans logger, crypto project, idempotence ...)  
 Afficher sa carte à partir de l'objet (modèle->vue)  
 Serialiser sa carte, la recharger à partir du du fichier  
 Récupérer les cartes des autres, afficher plusieurs cartes  
-Microservice: logging  
-Un seul broker blue, isolation par topic privé  
+
+## Thématique Microservice: Logging
+
+Un seul broker blue, chacun logge dans `/logs/\<name>/#`
+Un client log est mis à disposition
+Chaque personne logge "Hello ..." au démarrage, "Coucou" toutes les 10 secondes et "Bye ..." à l'arrêt
+Utiliser LWT pour les morts violentes
+
+## Thématique Microservice: Annuaire
+
+topic: `/directory`
+Au démarrage, il envoie `whoisthere`
+Les utilisateurs qui sont présents répondent avec `iamhere`
+Les utilisateurs qui quitte s'annoncent avec `iamout`
+Utiliser LWT pour les morts violentes
+Un client directory est mis à disposition
+
 Echanger des messages  
 Echanger les cartes sérialisées par message plutôt que par fichier  
 Structurer la comm:  
@@ -19,21 +39,17 @@ Microservice: chat
 Microservice: Annuaire  
 Utiliser LWT pour maintenir la liste  
 Faire plusieurs petites app   
-Microservice: banque
-    - la banque crée des comptes. les comptes sont distribués manuellement aux élèves
-    - appels basiques:
-      - Solde de compte
-      - Transfert à un compte: retourne un reçu
-    - appels sérieux:
-      - Solde de compte: réponse si la demande est signée par le propriétaire du compte
-      - Transfert à un compte: vérification de la signature, retourne un reçu signé de la banque
-Microservice: Inventaire. Il contient N instances de chaque classe: casque, plastron, épaulière, gants, pantalons, bottes, arme. Tout est "distribué" aléatoirement, ce qui fait que quelqu'un pourrait avoir trois casques, mais ni gants ni bottes.
-    - appels basiques:
-      - Donne-moi la liste de mes objets
-      - Donne-moi un objet (je connais son id)
-      - Donne cet objet à untel
-    - appels sérieux:
-      - Je ne donne l'objet qu'après validaion du propriétaire
-      - Je ne transmets l'objet qu'après validation du propriétaire
+Microservice: Banque
+  - la banque crée des comptes. les comptes sont distribués manuellement aux élèves
+  - appels:
+    - Solde
+    - Dépôt
+    - Retrait
+Microservice: Arsenal. Il contient N instances de chaque classe: casque, plastron, épaulière, gants, pantalons, bottes, arme. Tout est "distribué" aléatoirement, ce qui fait que quelqu'un pourrait avoir trois casques, mais ni gants ni bottes.
+    - Inventaire
+    - Dépôt
+    - Retrait
+Microservice: Authentification
+  - On lui donne un message signé, il répond OK ou pas
 Microservice: vente de musique 
 Projet: player standalone avec achat legit ET pirate P2P
