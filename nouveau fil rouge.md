@@ -1,3 +1,16 @@
+# Fil rouge "Un MDD (Monde De Douceurs)"
+
+Dousville est la ville du Cyberspace qui compte le plus de Boulangeries-pâtisseries.
+
+Checune d'entre elle produit une spécialité qu'elle vend, ainsi que toutes les spécialités des autres !
+
+Tout ceci repose sur une architecture microservices:
+- Log
+- Registre du commerce
+- Banque
+- Dépôt de la coopérative
+- Chat
+
 ## Thématique "Je suis sensé savoir..."
 
 Objet / Classe / Static  
