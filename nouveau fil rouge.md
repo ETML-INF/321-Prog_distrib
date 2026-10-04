@@ -1,4 +1,4 @@
-# Fil rouge "Un MDD (Monde De Douceurs)"
+# Fil rouge "UMDD (Un Monde De Douceurs)"
 
 Dousville est la ville du Cyberspace qui compte le plus de Boulangeries-pâtisseries (BP).
 
