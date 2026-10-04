@@ -155,9 +155,9 @@ Dans le cas où le compte courant de la coopérative est insuffisamment garni po
 
 ## Thématique Cluster
 
-Le service d'annuaire est stateless. Ils est donc particulièrement indiqué pour être déployé en cluster, afin d'en assurer la disponibilité et/ou distribuer la charge.
+Le service d'annuaire est stateless. Il est donc particulièrement indiqué pour être déployé en cluster, afin d'en assurer la disponibilité et/ou distribuer la charge.
 
-## Activité
+### Activité
 
 Déployer les quatre services d'annuaire développés précédemment dans des conteneurs séparés.  
 Adapter chacune des applications de telle manière qu'à tout moment une et une seule des quatre instances de service ne répond aux clients.
@@ -166,13 +166,13 @@ Adapter chacune des applications de telle manière qu'à tout moment une et une 
 
 Jusqu'ici, nous avons tout fait à la confiance. N'importe qui peut déposer une spécialité qui n'est pas la sienne à la coopérative. N'importe qui peut consulter le compte courant de n'importe qui. Pire : n'importe qui peut faire un transfert d'argent d'un autre compte vers le sien.
 
-On se respecte les uns les autres à Dousville, mais jusqu'à un certain point seulement ...
+On se respecte et on se fait confiance les uns les autres à Dousville, mais quand même ...
 
-On va donc mettre en place des mécanisme qui vont nous permettre de vérifier de manière cryptographique:
-- que la spécialité déposait à la coopérative provient bien de la BP, qui est la seule à savoir l'affaire
-- que la demande de solde de compte provient bien du détenteur du compte
-- qu'une demande de transfert d'argent provient bien du détenteur du compte
-- que les opérations bancaires - qui transitent par un broker ouvert - ne peuvent être lues que par les personnes autorisées.
+On va mettre en place des mécanismes cryptographiques qui vont nous permettre:
+- de vérifier que la spécialité déposée à la coopérative provient bien de la BP qui est la seule à savoir la faire
+- de vérifier que la demande de solde de compte provient bien du détenteur du compte
+- de vérifier qu'une demande de transfert d'argent provient bien du détenteur du compte
+- d'assurer que les opérations bancaires - qui transitent par un broker ouvert - ne peuvent être lues que par les personnes autorisées.
 
 Microservice: vente de musique 
 Projet: player standalone avec achat legit ET pirate P2P
