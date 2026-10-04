@@ -162,7 +162,7 @@ Le service d'annuaire est stateless. Il est donc particulièrement indiqué pour
 Déployer les quatre services d'annuaire développés précédemment dans des conteneurs séparés.  
 Adapter chacune des applications de telle manière qu'à tout moment une et une seule des quatre instances de service ne répond aux clients.
 
-## Thématique sécurité
+## Thématique Sécurité
 
 Jusqu'ici, nous avons tout fait à la confiance. N'importe qui peut déposer une spécialité qui n'est pas la sienne à la coopérative. N'importe qui peut consulter le compte courant de n'importe qui. Pire : n'importe qui peut faire un transfert d'argent d'un autre compte vers le sien.
 
@@ -173,6 +173,3 @@ On va mettre en place des mécanismes cryptographiques qui vont nous permettre:
 - de vérifier que la demande de solde de compte provient bien du détenteur du compte
 - de vérifier qu'une demande de transfert d'argent provient bien du détenteur du compte
 - d'assurer que les opérations bancaires - qui transitent par un broker ouvert - ne peuvent être lues que par les personnes autorisées.
-
-Microservice: vente de musique 
-Projet: player standalone avec achat legit ET pirate P2P
