@@ -27,6 +27,7 @@ Mise à disposition d'une base de code : une solution Windows Forms qui contient
 - Un modèle `Business` pour le commerce
 - Un modèle `Specialty` pour la spécialité
 - Un formulaire `Store` qui est la vitrine de la boulangerie
+- Un formulaire `Billboard` qui affiche une `List<Store>`
 - La "plomberie" Mqtt:
   - un agent qu'on instancie avec l'adresse IP du broker et le topic auquel ont souscrit
   - une méthode qui permet d'envoyer des messages sur un topic
@@ -35,7 +36,7 @@ Mise à disposition d'une base de code : une solution Windows Forms qui contient
 ### Activité
 Afficher sa vitrine à partir de l'objet hardcodé  
 Serialiser sa BP, la recharger à partir du du fichier et se débarrasser des valeurs hardcodées
-Récupérer les BP des autres, afficher plusieurs BP (un formulaire sans agent MQTT)  
+Récupérer les BP des autres, afficher plusieurs BP dans le Billboard  
 
 DoD:
 - Chacun affiche sa vitrine et au moins deux autres BP
