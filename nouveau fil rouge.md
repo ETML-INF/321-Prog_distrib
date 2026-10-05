@@ -174,3 +174,7 @@ On va mettre en place des mécanismes cryptographiques qui vont nous permettre:
 - de vérifier que la demande de solde de compte provient bien du détenteur du compte
 - de vérifier qu'une demande de transfert d'argent provient bien du détenteur du compte
 - d'assurer que les opérations bancaires - qui transitent par un broker ouvert - ne peuvent être lues que par les personnes autorisées.
+
+## Thématique Supervision
+
+Pour que chaque BP puisse mener son activité quotidienne sereinement, on va mettre en place une entité dédiée à la surveillance de la disponibilité de tous les microservices. Ce système aura pour mission de détecter les pannes et d'alerter l'équipe de maintenance le cas échéant.
