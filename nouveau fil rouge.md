@@ -27,7 +27,7 @@ Mise à disposition d'une base de code : une solution Windows Forms qui contient
 - Un modèle `Business` pour le commerce
 - Un modèle `Specialty` pour la spécialité
 - Un formulaire `Store` qui est la vitrine de la boulangerie
-- Un formulaire `Billboard` qui affiche une `List<Store>`
+- Un formulaire `Billboard` qui affiche une `List<Business>`
 - La "plomberie" Mqtt:
   - un agent qu'on instancie avec l'adresse IP du broker et le topic auquel ont souscrit
   - une méthode qui permet d'envoyer des messages sur un topic
