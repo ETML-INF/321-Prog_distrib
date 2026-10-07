@@ -32,18 +32,18 @@ namespace Umdd
         private readonly float[,] _grassShade = new float[GridSize, GridSize];
         private readonly List<Bakery> _bakeries =
         [
-            new("BP A", 1, 5, 7, Color.FromArgb(240, 150, 170)),   // rose bonbon
-            new("BP B", 2, 15, 7, Color.FromArgb(140, 205, 170)),  // pistache
-            new("BP C", 3, 25, 10, Color.FromArgb(245, 214, 110)), // citron
-            new("BP D", 4, 35, 7, Color.FromArgb(180, 150, 215)),  // violette
-            new("BP E", 5, 7, 22, Color.FromArgb(205, 150, 100)),  // caramel
-            new("BP F", 6, 16, 27, Color.FromArgb(130, 185, 230)), // myrtille
-            new("BP G", 7, 30, 24, Color.FromArgb(235, 125, 100)), // framboise
-            new("BP H", 8, 10, 33, Color.FromArgb(240, 180, 120)), // abricot
-            new("BP I", 9, 3, 17, Color.FromArgb(120, 210, 200)),  // menthe
-            new("BP J", 10, 20, 14, Color.FromArgb(165, 115, 85)), // chocolat
-            new("BP K", 11, 35, 30, Color.FromArgb(250, 175, 150)),// pêche
-            new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
+            new("Zidane", 1, 5, 7, Color.FromArgb(240, 150, 170)),   // rose bonbon
+            new("Erdem", 2, 15, 7, Color.FromArgb(140, 205, 170)),  // pistache
+            new("Théophile", 3, 25, 10, Color.FromArgb(245, 214, 110)), // citron
+            new("Gillian", 4, 35, 7, Color.FromArgb(180, 150, 215)),  // violette
+            new("Kiril", 5, 7, 22, Color.FromArgb(205, 150, 100)),  // caramel
+            new("Tony", 6, 16, 27, Color.FromArgb(130, 185, 230)), // myrtille
+            new("Albert", 7, 30, 24, Color.FromArgb(235, 125, 100)), // framboise
+            new("Gianmarco", 8, 10, 33, Color.FromArgb(240, 180, 120)), // abricot
+            new("Rochat", 9, 3, 17, Color.FromArgb(120, 210, 200)),  // menthe
+            new("Chabal", 10, 20, 14, Color.FromArgb(165, 115, 85)), // chocolat
+            new("Sacha", 11, 35, 30, Color.FromArgb(250, 175, 150)),// pêche
+            new("Snehan", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
         ];
 
         private enum LandmarkKind { Bank, Police, Cooperative, Telecom, Registry, Library }
@@ -117,9 +117,12 @@ namespace Umdd
 
         /// <summary>
         /// Étiquettes des BP et des bâtiments publics (zone écran + contour arrondi), calculées une fois par taille de fenêtre.
-        /// Sert aussi à savoir sur quelle BP on clique (Bakery est null pour un bâtiment public, non cliquable).
+        /// Lot : cases du lotissement dont le survol fait apparaître l'étiquette. Bakery est null pour un bâtiment public (non cliquable).
         /// </summary>
-        private readonly List<(RectangleF Rect, GraphicsPath Path, string Text, Color Color, Bakery? Bakery)> _labels = [];
+        private readonly List<(RectangleF Rect, GraphicsPath Path, string Text, Color Color, Rectangle Lot, Bakery? Bakery)> _labels = [];
+
+        /// <summary>Indice dans _labels de l'étiquette affichée (lotissement ou étiquette survolé par la souris), -1 si aucune.</summary>
+        private int _hoveredLabel = -1;
 
         /// <summary>Objets en relief immobiles (arbres, BP, villas), déjà triés par profondeur.</summary>
         private (float Depth, Action<Graphics> Draw)[] _scenery = [];
@@ -143,10 +146,15 @@ namespace Umdd
             KeyPreview = true;
 
             KeyDown += (_, e) => { if (e.KeyCode == Keys.Escape) Close(); };
-            MouseMove += (_, e) => Cursor = LabelAt(e.Location) is null ? Cursors.Default : Cursors.Hand;
+            MouseMove += (_, e) =>
+            {
+                UpdateHover(e.Location);
+                Cursor = HoveredBakery is null ? Cursors.Default : Cursors.Hand;
+            };
+            MouseLeave += (_, _) => _hoveredLabel = -1;
             MouseClick += (_, e) =>
             {
-                if (e.Button != MouseButtons.Left || LabelAt(e.Location) is not { } bakery) return;
+                if (e.Button != MouseButtons.Left || HoveredBakery is not { } bakery) return;
                 using var form = new BakeryForm(LabelText(bakery));
                 form.ShowDialog(this);
             };
@@ -312,6 +320,7 @@ namespace Umdd
             _background = null;
             foreach (var label in _labels) label.Path.Dispose();
             _labels.Clear();
+            _hoveredLabel = -1;
             foreach (var p in _pens.Values) p.Dispose();
             _pens.Clear();
             _labelFont?.Dispose();
@@ -322,6 +331,14 @@ namespace Umdd
         /// <summary>Coordonnées de grille (gx, gy) + altitude z en pixels → coordonnées écran.</summary>
         private PointF Iso(float gx, float gy, float z = 0) =>
             new(_originX + (gx - gy) * _tileW / 2, _originY + (gx + gy) * _tileH / 2 - z);
+
+        /// <summary>Projection inverse au niveau du sol : point écran → case de la grille qui s'y trouve (éventuellement hors carte).</summary>
+        private Point TileAt(Point p)
+        {
+            float u = (p.X - _originX) / (_tileW / 2); // gx - gy
+            float v = (p.Y - _originY) / (_tileH / 2); // gx + gy
+            return new Point((int)MathF.Floor((u + v) / 2), (int)MathF.Floor((v - u) / 2));
+        }
 
         #endregion
 
@@ -369,8 +386,11 @@ namespace Umdd
             while (i < _scenery.Length)
                 _scenery[i++].Draw(g);
 
-            foreach (var label in _labels)
+            if (_hoveredLabel >= 0)
+            {
+                var label = _labels[_hoveredLabel];
                 DrawLabel(g, label.Rect, label.Path, label.Text, label.Color);
+            }
 
             double ms = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
             _renderMs = _renderMs * 0.9 + ms * 0.1;
@@ -400,18 +420,18 @@ namespace Umdd
                 DrawParcelBorder(g, b);
 
             foreach (var b in _bakeries)
-                AddLabel(g, Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f), LabelText(b), b.Color, b);
+                AddLabel(g, Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f), LabelText(b), b.Color, new Rectangle(b.X, b.Y, LotSize, LotSize), b);
             foreach (var l in _landmarks)
-                AddLabel(g, Iso(l.X + l.Size / 2f, l.Y + l.Size / 2f, _tileW * l.LabelHeight), l.Name, l.Color, null);
+                AddLabel(g, Iso(l.X + l.Size / 2f, l.Y + l.Size / 2f, _tileW * l.LabelHeight), l.Name, l.Color, new Rectangle(l.X, l.Y, l.Size, l.Size), null);
             _hintSize = g.MeasureString(Hint, _smallFont!);
         }
 
         /// <summary>Mesure une étiquette centrée sur son point d'ancrage et prépare son contour arrondi.</summary>
-        private void AddLabel(Graphics g, PointF anchor, string text, Color color, Bakery? bakery)
+        private void AddLabel(Graphics g, PointF anchor, string text, Color color, Rectangle lot, Bakery? bakery)
         {
             var size = g.MeasureString(text, _labelFont!);
             var rect = new RectangleF(anchor.X - size.Width / 2 - 8, anchor.Y - size.Height / 2 - 3, size.Width + 16, size.Height + 6);
-            _labels.Add((rect, RoundedRect(rect, rect.Height / 2), text, color, bakery));
+            _labels.Add((rect, RoundedRect(rect, rect.Height / 2), text, color, lot, bakery));
         }
 
         private void DrawSky(Graphics g)
@@ -1293,14 +1313,21 @@ namespace Umdd
 
         private static string LabelText(Bakery b) => $"{b.Name}";
 
-        /// <summary>BP dont l'étiquette est sous le point donné ; la dernière dessinée (au premier plan) gagne.</summary>
-        private Bakery? LabelAt(Point p)
+        /// <summary>
+        /// Choisit l'étiquette à afficher : celle du lotissement dont une case est sous la souris,
+        /// sinon celle déjà affichée tant que la souris reste dessus (pour pouvoir aller cliquer sur l'étiquette d'une BP).
+        /// </summary>
+        private void UpdateHover(Point p)
         {
-            for (int i = _labels.Count - 1; i >= 0; i--)
-                if (_labels[i].Rect.Contains(p))
-                    return _labels[i].Bakery;
-            return null;
+            var tile = TileAt(p);
+            int hovered = _labels.FindIndex(l => l.Lot.Contains(tile));
+            if (hovered < 0 && _hoveredLabel >= 0 && _labels[_hoveredLabel].Rect.Contains(p))
+                hovered = _hoveredLabel;
+            _hoveredLabel = hovered;
         }
+
+        /// <summary>BP dont l'étiquette est affichée (null si aucune, ou si c'est celle d'un bâtiment public).</summary>
+        private Bakery? HoveredBakery => _hoveredLabel >= 0 ? _labels[_hoveredLabel].Bakery : null;
 
         private void DrawLabel(Graphics g, RectangleF rect, GraphicsPath path, string text, Color color)
         {
