@@ -46,7 +46,7 @@ namespace Umdd
             new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
         ];
 
-        private enum LandmarkKind { Bank, Police }
+        private enum LandmarkKind { Bank, Police, Cooperative }
 
         /// <summary>
         /// Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.
@@ -58,6 +58,7 @@ namespace Umdd
         [
             new(LandmarkKind.Bank, "Banque", 16, 16, 3, Color.FromArgb(225, 185, 70), 1.9f),   // au centre-ville, à l'angle du carrefour des routes 19
             new(LandmarkKind.Police, "Police", 26, 16, 3, Color.FromArgb(80, 130, 230), 2.3f), // supervision, à l'angle des routes 29 et 19
+            new(LandmarkKind.Cooperative, "Coopérative", 26, 6, 3, Color.FromArgb(140, 210, 240), 1.6f), // entrepôt frigorifique, à l'angle des routes 29 et 9
         ];
 
         private const int VillaCount = 50;
@@ -585,6 +586,112 @@ namespace Umdd
             {
                 case LandmarkKind.Bank: DrawBank(g, l.X, l.Y); break;
                 case LandmarkKind.Police: DrawPoliceStation(g, l.X, l.Y); break;
+                case LandmarkKind.Cooperative: DrawColdStore(g, l.X, l.Y); break;
+            }
+        }
+
+        /// <summary>
+        /// Coopérative : entrepôt frigorifique (lotissement 3x3) en bardage nervuré, logo flocon, groupes froids sur le toit,
+        /// quais de chargement côté route (+x) dont un ouvert, avec un camion frigorifique à quai et de la buée qui s'échappe.
+        /// </summary>
+        private void DrawColdStore(Graphics g, float X, float Y)
+        {
+            float h = _tileW * 0.6f, slab = h * 0.05f, dockH = h * 0.18f;
+            var wall = Color.FromArgb(236, 240, 244);
+            var ice = Color.FromArgb(70, 140, 200);
+            var concrete = Color.FromArgb(190, 188, 182);
+            var rib = PenOf(Shade(wall, 0.86f), 1);
+
+            // Halle : bardage nervuré et soubassement bleu glacier
+            float x0 = X + 0.25f, y0 = Y + 0.25f, x1 = X + 2.2f, y1 = Y + 2.6f;
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, 0, h, wall);
+            for (float x = x0 + 0.15f; x < x1; x += 0.15f)
+                g.DrawLine(rib, Iso(x, y1, 0), Iso(x, y1, h));
+            for (float y = y0 + 0.15f; y < y1; y += 0.15f)
+                g.DrawLine(rib, Iso(x1, y, 0), Iso(x1, y, h));
+            Fill(g, ice, FaceY(y1, x0, x1, 0, h * 0.1f));
+            Fill(g, Shade(ice, 0.8f), FaceX(x1, y0, y1, 0, h * 0.1f));
+
+            DrawSnowflake(g, Iso((x0 + x1) / 2, y1, h * 0.55f), _tileW * 0.17f, ice);
+
+            // Trois portes sectionnelles ; celle du milieu est ouverte sur la chambre froide
+            const int open = 1;
+            var shutter = PenOf(Color.FromArgb(160, 165, 172), 1);
+            for (int i = 0; i < 3; i++)
+            {
+                float ya = y0 + 0.2f + i * 0.75f, yb = ya + 0.5f;
+                if (i == open)
+                {
+                    Fill(g, Color.FromArgb(55, 85, 115), FaceX(x1, ya, yb, dockH, h * 0.7f));
+                    continue;
+                }
+                Fill(g, Color.FromArgb(205, 210, 216), FaceX(x1, ya, yb, dockH, h * 0.7f));
+                for (int k = 1; k < 5; k++)
+                {
+                    float z = dockH + k * (h * 0.7f - dockH) / 5;
+                    g.DrawLine(shutter, Iso(x1, ya, z), Iso(x1, yb, z));
+                }
+            }
+
+            // Toit plat et groupes froids, du fond vers l'avant, ventilateurs en rotation
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, h, slab, Color.FromArgb(200, 205, 212));
+            for (int i = 0; i < 3; i++)
+            {
+                float cx = x0 + 0.3f, cy = y0 + 0.3f + i * 0.65f, ch = h * 0.15f;
+                DrawBox(g, cx, cy, 0.45f, 0.4f, h + slab, ch, Color.FromArgb(180, 190, 200));
+                DrawFan(g, Iso(cx + 0.225f, cy + 0.2f, h + slab + ch), _tileW * 0.09f, _time * 12 + i);
+            }
+
+            // Quai de chargement et auvent
+            DrawBox(g, x1, y0 + 0.1f, 0.2f, y1 - y0 - 0.2f, 0, dockH, concrete);
+            DrawBox(g, x1, y0, 0.35f, y1 - y0, h * 0.78f, h * 0.04f, ice);
+
+            // Camion frigorifique à quai devant la porte ouverte : caisse isotherme puis cabine
+            float yc = y0 + 0.2f + open * 0.75f + 0.25f, tx = x1 + 0.22f;
+            DrawBox(g, tx, yc - 0.15f, 0.4f, 0.3f, 0, _tileW * 0.2f, Color.FromArgb(248, 250, 252));
+            Fill(g, ice, FaceY(yc + 0.15f, tx + 0.03f, tx + 0.37f, _tileW * 0.05f, _tileW * 0.09f));
+            DrawBox(g, tx + 0.4f, yc - 0.13f, 0.15f, 0.26f, 0, _tileW * 0.14f, Color.FromArgb(140, 210, 240));
+
+            // Buée froide qui s'échappe par le haut de la porte ouverte et retombe
+            for (int k = 0; k < 5; k++)
+            {
+                float p = (_time * 0.4f + k / 5f) % 1f;
+                var at = Iso(x1 + 0.05f + p * 0.5f, yc + MathF.Sin(_time + k) * 0.12f, h * (0.65f - p * 0.4f));
+                float rad = _tileW * (0.04f + p * 0.08f);
+                g.FillEllipse(BrushOf(Color.FromArgb((int)(130 * (1 - p)), 235, 245, 255)), at.X - rad, at.Y - rad, rad * 2, rad * 2);
+            }
+        }
+
+        /// <summary>Flocon de neige blanc sur une pastille de couleur (dessiné face à l'écran).</summary>
+        private void DrawSnowflake(Graphics g, PointF c, float r, Color disc)
+        {
+            g.FillEllipse(BrushOf(disc), c.X - r, c.Y - r, r * 2, r * 2);
+            var pen = PenOf(Color.White, Math.Max(1f, _tileW / 60));
+            float arm = r * 0.75f;
+            for (int k = 0; k < 6; k++)
+            {
+                float a = MathF.PI / 2 + k * MathF.PI / 3;
+                var end = new PointF(c.X + MathF.Cos(a) * arm, c.Y + MathF.Sin(a) * arm);
+                g.DrawLine(pen, c, end);
+                var mid = new PointF(c.X + MathF.Cos(a) * arm * 0.55f, c.Y + MathF.Sin(a) * arm * 0.55f);
+                for (int s = -1; s <= 1; s += 2) // deux petites branches de part et d'autre du bras
+                {
+                    float b = a + s * 0.7f;
+                    g.DrawLine(pen, mid, new PointF(mid.X + MathF.Cos(b) * arm * 0.3f, mid.Y + MathF.Sin(b) * arm * 0.3f));
+                }
+            }
+        }
+
+        /// <summary>Ventilateur vu du dessus (cercle aplati 2:1 par la projection), deux pales en rotation.</summary>
+        private void DrawFan(Graphics g, PointF c, float r, float angle)
+        {
+            float ry = r / 2;
+            g.FillEllipse(BrushOf(Color.FromArgb(60, 65, 75)), c.X - r, c.Y - ry, r * 2, ry * 2);
+            var blade = PenOf(Color.FromArgb(170, 175, 185), Math.Max(1f, _tileW / 50));
+            for (int k = 0; k < 2; k++)
+            {
+                float a = angle + k * MathF.PI / 2, dx = MathF.Cos(a) * r * 0.85f, dy = MathF.Sin(a) * ry * 0.85f;
+                g.DrawLine(blade, c.X - dx, c.Y - dy, c.X + dx, c.Y + dy);
             }
         }
 
