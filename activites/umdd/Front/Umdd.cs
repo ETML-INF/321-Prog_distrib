@@ -46,7 +46,7 @@ namespace Umdd
             new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
         ];
 
-        private enum LandmarkKind { Bank, Police, Cooperative, Telecom }
+        private enum LandmarkKind { Bank, Police, Cooperative, Telecom, Registry }
 
         /// <summary>
         /// Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.
@@ -60,6 +60,7 @@ namespace Umdd
             new(LandmarkKind.Police, "Police", 26, 16, 3, Color.FromArgb(80, 130, 230), 2.3f), // supervision, à l'angle des routes 29 et 19
             new(LandmarkKind.Cooperative, "Coopérative", 26, 6, 3, Color.FromArgb(140, 210, 240), 1.6f), // entrepôt frigorifique, à l'angle des routes 29 et 9
             new(LandmarkKind.Telecom, "Télécoms", 6, 16, 3, Color.FromArgb(190, 140, 250), 3.1f),        // service de chat, à l'angle des routes 9 et 19
+            new(LandmarkKind.Registry, "Registre du commerce", 6, 26, 3, Color.FromArgb(90, 170, 90), 2.3f), // annuaire, à l'angle des routes 9 et 29
         ];
 
         private const int VillaCount = 50;
@@ -589,7 +590,117 @@ namespace Umdd
                 case LandmarkKind.Police: DrawPoliceStation(g, l.X, l.Y); break;
                 case LandmarkKind.Cooperative: DrawColdStore(g, l.X, l.Y); break;
                 case LandmarkKind.Telecom: DrawTelecom(g, l.X, l.Y, l.Color); break;
+                case LandmarkKind.Registry: DrawRegistry(g, l.X, l.Y); break;
             }
+        }
+
+        /// <summary>
+        /// Registre du commerce (lotissement 3x3), pour l'annuaire : bâtiment administratif à toit mansardé et tour d'horloge.
+        /// Ses fenêtres s'allument l'une après l'autre, comme une recherche qui parcourt les fiches ; un drapeau suisse flotte devant.
+        /// </summary>
+        private void DrawRegistry(Graphics g, float X, float Y)
+        {
+            float h = _tileW * 0.85f, cornice = h * 0.05f;
+            var sandstone = Color.FromArgb(225, 205, 165);
+            var slate = Color.FromArgb(90, 100, 115);
+            float x0 = X + 0.35f, y0 = Y + 0.35f, x1 = X + 2.3f, y1 = Y + 2.3f, yMid = (y0 + y1) / 2;
+
+            // Corps de bâtiment, soubassement plus sombre, perron et porte côté route (+x)
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, 0, h, sandstone);
+            Fill(g, Shade(sandstone, 0.7f), FaceY(y1, x0, x1, 0, h * 0.1f));
+            Fill(g, Shade(sandstone, 0.55f), FaceX(x1, y0, y1, 0, h * 0.1f));
+            Fill(g, Color.FromArgb(95, 60, 40), FaceX(x1, yMid - 0.15f, yMid + 0.15f, h * 0.05f, h * 0.32f));
+            DrawBox(g, x1, yMid - 0.25f, 0.15f, 0.5f, 0, h * 0.05f, Color.FromArgb(200, 195, 185));
+
+            // Fenêtres : 3 étages x 5 travées par façade ; la « recherche » allume une fenêtre après l'autre, avec une traîne
+            const int windows = 15 + 14;
+            int lit = (int)(_time * 5) % windows, n = 0;
+            Color WindowColor(int index) =>
+                index == lit ? Color.FromArgb(255, 232, 150)
+                : index == (lit + windows - 1) % windows ? Color.FromArgb(200, 180, 130)
+                : Color.FromArgb(85, 100, 125);
+            for (int f = 0; f < 3; f++)
+            {
+                float za = h * (0.15f + f * 0.27f), zb = za + h * 0.15f;
+                for (int i = 0; i < 5; i++)
+                {
+                    float xa = x0 + 0.15f + i * 0.36f;
+                    Fill(g, WindowColor(n++), FaceY(y1, xa, xa + 0.18f, za, zb));
+                }
+                for (int i = 0; i < 5; i++)
+                {
+                    if (f == 0 && i == 2) continue; // porte
+                    float ya = y0 + 0.15f + i * 0.36f;
+                    Fill(g, WindowColor(n++), FaceX(x1, ya, ya + 0.18f, za, zb));
+                }
+            }
+
+            // Corniche et toit mansardé avec lucarnes
+            float z = h + cornice, rh = _tileW * 0.22f, inset = 0.3f;
+            DrawBox(g, x0 - 0.04f, y0 - 0.04f, x1 - x0 + 0.08f, y1 - y0 + 0.08f, h, cornice, Shade(sandstone, 1.08f));
+            DrawMansardRoof(g, x0, y0, x1, y1, z, rh, inset, slate);
+            var dormer = Color.FromArgb(215, 220, 228);
+            PointF OnFrontSlope(float x, float t) => Iso(x, y1 - t * inset, z + t * rh);
+            PointF OnSideSlope(float y, float t) => Iso(x1 - t * inset, y, z + t * rh);
+            for (int i = 0; i < 4; i++)
+            {
+                float a = x0 + 0.3f + i * 0.4f, b = a + 0.16f;
+                Fill(g, dormer, OnFrontSlope(a, 0.25f), OnFrontSlope(b, 0.25f), OnFrontSlope(b, 0.7f), OnFrontSlope(a, 0.7f));
+                a = y0 + 0.3f + i * 0.4f; b = a + 0.16f;
+                Fill(g, Shade(dormer, 0.8f), OnSideSlope(a, 0.25f), OnSideSlope(b, 0.25f), OnSideSlope(b, 0.7f), OnSideSlope(a, 0.7f));
+            }
+
+            // Tour d'horloge au centre du toit (l'horloge donne l'heure réelle)
+            float s = 0.4f, tx = (x0 + x1) / 2 - s / 2, ty = (y0 + y1) / 2 - s / 2, tz = z + rh, th = _tileW * 0.35f;
+            DrawBox(g, tx, ty, s, s, tz, th, sandstone);
+            DrawClock(g, Iso(tx + s / 2, ty + s, tz + th * 0.55f), _tileW * 0.075f);
+            DrawHipRoof(g, tx - 0.04f, ty - 0.04f, tx + s + 0.04f, ty + s + 0.04f, tz + th, _tileW * 0.22f, slate);
+
+            // Drapeau suisse au coin du parvis, côté carrefour
+            DrawSwissFlag(g, X + 2.75f, Y + 2.75f, _tileW * 1.0f);
+        }
+
+        /// <summary>Toit mansardé : brisis pentus sur les faces visibles et terrasson plat au sommet.</summary>
+        private void DrawMansardRoof(Graphics g, float x0, float y0, float x1, float y1, float z, float rh, float inset, Color c)
+        {
+            float ix0 = x0 + inset, iy0 = y0 + inset, ix1 = x1 - inset, iy1 = y1 - inset, zt = z + rh;
+            Fill(g, Shade(c, 0.7f), Iso(x1, y0, z), Iso(x1, y1, z), Iso(ix1, iy1, zt), Iso(ix1, iy0, zt));
+            Fill(g, Shade(c, 0.88f), Iso(x0, y1, z), Iso(x1, y1, z), Iso(ix1, iy1, zt), Iso(ix0, iy1, zt));
+            Fill(g, Shade(c, 1.2f), Iso(ix0, iy0, zt), Iso(ix1, iy0, zt), Iso(ix1, iy1, zt), Iso(ix0, iy1, zt));
+        }
+
+        /// <summary>Cadran d'horloge (face à l'écran) qui affiche l'heure locale.</summary>
+        private void DrawClock(Graphics g, PointF c, float r)
+        {
+            g.FillEllipse(BrushOf(Color.FromArgb(250, 248, 240)), c.X - r, c.Y - r, r * 2, r * 2);
+            g.DrawEllipse(PenOf(Color.FromArgb(60, 55, 50), Math.Max(1f, _tileW / 70)), c.X - r, c.Y - r, r * 2, r * 2);
+            var now = DateTime.Now;
+            float minutes = now.Minute + now.Second / 60f, hours = now.Hour % 12 + minutes / 60;
+            var hand = PenOf(Color.FromArgb(40, 35, 30), Math.Max(1f, _tileW / 60));
+            foreach (var (turns, length) in new[] { (hours / 12, 0.5f), (minutes / 60, 0.8f) })
+            {
+                float a = turns * MathF.Tau - MathF.PI / 2;
+                g.DrawLine(hand, c, new PointF(c.X + MathF.Cos(a) * r * length, c.Y + MathF.Sin(a) * r * length));
+            }
+        }
+
+        /// <summary>Mât et drapeau suisse (carré rouge, croix blanche) qui ondule au vent.</summary>
+        private void DrawSwissFlag(Graphics g, float gx, float gy, float poleH)
+        {
+            var foot = Iso(gx, gy);
+            var top = Iso(gx, gy, poleH);
+            g.DrawLine(PenOf(Color.FromArgb(200, 200, 205), Math.Max(1f, _tileW / 45)), foot, top);
+
+            float size = _tileW * 0.24f;
+            // (u, v) dans [0,1]² → point écran ; l'ondulation croît en s'éloignant du mât
+            PointF At(float u, float v) =>
+                new(top.X + u * size, top.Y + _tileW * 0.02f + v * size + MathF.Sin(_time * 4 - u * 3) * u * size * 0.12f);
+            void Quad(Color c, float u0, float v0, float u1, float v1) =>
+                Fill(g, c, At(u0, v0), At(u1, v0), At(u1, v1), At(u0, v1));
+
+            Quad(Color.FromArgb(215, 30, 40), 0, 0, 1, 1);
+            Quad(Color.White, 0.4f, 0.2f, 0.6f, 0.8f);
+            Quad(Color.White, 0.2f, 0.4f, 0.8f, 0.6f);
         }
 
         /// <summary>
