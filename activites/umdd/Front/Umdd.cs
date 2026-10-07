@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
 
 namespace Umdd
@@ -89,11 +90,21 @@ namespace Umdd
         private float _time;
         private double _renderMs;
 
-        /// <summary>Zones écran des étiquettes au dernier rendu, pour savoir sur quelle BP on clique.</summary>
-        private readonly List<(RectangleF Rect, Bakery Bakery)> _labelHits = [];
+        /// <summary>Étiquettes des BP (zone écran + contour arrondi), calculées une fois par taille de fenêtre ; sert aussi à savoir sur quelle BP on clique.</summary>
+        private readonly List<(RectangleF Rect, GraphicsPath Path, Bakery Bakery)> _labels = [];
+
+        /// <summary>Objets en relief immobiles (arbres, BP, villas), déjà triés par profondeur.</summary>
+        private (float Depth, Action<Graphics> Draw)[] _scenery = [];
 
         // Paramètres de projection, recalculés à chaque redimensionnement
         private float _tileW, _tileH, _originX, _originY;
+
+        // Ressources de rendu réutilisées d'une image à l'autre
+        private Bitmap? _background; // ciel, socle et sol (hors eau), rendus une seule fois par taille de fenêtre
+        private Font? _labelFont, _titleFont, _smallFont;
+        private SizeF _hintSize;
+        private readonly Dictionary<int, SolidBrush> _brushes = [];
+        private readonly Dictionary<(int Argb, float Width), Pen> _pens = [];
 
         public Umdd()
         {
@@ -112,7 +123,7 @@ namespace Umdd
                 form.ShowDialog(this);
             };
             Resize += (_, _) => { ComputeLayout(); Invalidate(); };
-            FormClosed += (_, _) => _timer.Dispose();
+            FormClosed += (_, _) => { _timer.Dispose(); ReleaseLayoutResources(); foreach (var b in _brushes.Values) b.Dispose(); };
             _timer.Tick += (_, _) => { _time = (float)_clock.Elapsed.TotalSeconds; Invalidate(); };
 
             BuildCity();
@@ -157,6 +168,21 @@ namespace Umdd
                     if (tree && _ground[x, y] == Ground.Grass && !IsNearBuilding(x, y))
                         _treeSize[x, y] = 0.6f + (float)rng.NextDouble() * 0.4f;
                 }
+
+            // Décor immobile trié une fois pour toutes (tri stable : arbres, puis BP, puis villas à profondeur égale)
+            var scenery = new List<(float Depth, Action<Graphics> Draw)>();
+            for (int x = 0; x < GridSize; x++)
+                for (int y = 0; y < GridSize; y++)
+                    if (_treeSize[x, y] > 0)
+                    {
+                        int tx = x, ty = y;
+                        scenery.Add((tx + ty + 1, g => DrawTree(g, tx, ty, _treeSize[tx, ty])));
+                    }
+            foreach (var b in _bakeries)
+                scenery.Add((b.X + b.Y + LotSize, g => DrawBakery(g, b)));
+            foreach (var v in _villas)
+                scenery.Add((v.X + v.Y + v.Size, g => DrawVilla(g, v)));
+            _scenery = [.. scenery.OrderBy(o => o.Depth)];
         }
 
         /// <summary>
@@ -236,6 +262,25 @@ namespace Umdd
             _tileH = _tileW / 2;
             _originX = size.Width / 2f;
             _originY = (size.Height - GridSize * _tileH) / 2f + size.Height * 0.03f;
+
+            // Tout ce qui dépend de la taille est recréé : polices, stylos (épaisseurs), fond et étiquettes (reconstruits au prochain rendu)
+            ReleaseLayoutResources();
+            _labelFont = new Font("Segoe UI Semibold", Math.Max(10f, _tileW * 0.3f), GraphicsUnit.Pixel);
+            _titleFont = new Font("Segoe UI", Math.Max(24f, size.Height * 0.04f), FontStyle.Bold, GraphicsUnit.Pixel);
+            _smallFont = new Font("Segoe UI", Math.Max(12f, size.Height * 0.017f), GraphicsUnit.Pixel);
+        }
+
+        private void ReleaseLayoutResources()
+        {
+            _background?.Dispose();
+            _background = null;
+            foreach (var (_, path, _) in _labels) path.Dispose();
+            _labels.Clear();
+            foreach (var p in _pens.Values) p.Dispose();
+            _pens.Clear();
+            _labelFont?.Dispose();
+            _titleFont?.Dispose();
+            _smallFont?.Dispose();
         }
 
         /// <summary>Coordonnées de grille (gx, gy) + altitude z en pixels → coordonnées écran.</summary>
@@ -252,6 +297,60 @@ namespace Umdd
             long start = Stopwatch.GetTimestamp();
 
             var g = e.Graphics;
+            EnsureBackground();
+
+            // Copie brute du fond pré-rendu (pas de mélange alpha ni d'interpolation)
+            g.CompositingMode = CompositingMode.SourceCopy;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            g.DrawImage(_background!, 0, 0, _background!.Width, _background.Height);
+            g.CompositingMode = CompositingMode.SourceOver;
+
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+
+            // Seule l'eau du sol est animée
+            for (int y = 0; y < GridSize; y++)
+                for (int x = 0; x < GridSize; x++)
+                    if (_ground[x, y] == Ground.Water)
+                        DrawTile(g, x, y);
+
+            // Objets en relief : algorithme du peintre, du fond (x+y petit) vers l'avant.
+            // Le décor est déjà trié ; on y intercale les camionnettes (à profondeur égale, le décor passe d'abord)
+            var vans = new (float Depth, Van Van, float Gx, float Gy)[_vans.Count];
+            for (int k = 0; k < vans.Length; k++)
+            {
+                var (gx, gy) = VanPosition(_vans[k]);
+                vans[k] = (gx + gy, _vans[k], gx, gy);
+            }
+            Array.Sort(vans, (a, b) => a.Depth.CompareTo(b.Depth));
+            int i = 0;
+            foreach (var (depth, van, gx, gy) in vans)
+            {
+                while (i < _scenery.Length && _scenery[i].Depth <= depth)
+                    _scenery[i++].Draw(g);
+                DrawVan(g, van, gx, gy);
+            }
+            while (i < _scenery.Length)
+                _scenery[i++].Draw(g);
+
+            foreach (var label in _labels)
+                DrawLabel(g, label.Rect, label.Path, label.Bakery);
+
+            double ms = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            _renderMs = _renderMs * 0.9 + ms * 0.1;
+            DrawHud(g);
+        }
+
+        /// <summary>
+        /// Pré-rend dans une image tout ce qui ne bouge pas sous les objets : ciel, socle, sol (sauf l'eau), marquages et bordures de parcelles.
+        /// Profite du contexte graphique pour mesurer les étiquettes, qui ne changent pas non plus.
+        /// </summary>
+        private void EnsureBackground()
+        {
+            if (_background != null) return;
+
+            _background = new Bitmap(ClientSize.Width, ClientSize.Height, PixelFormat.Format32bppPArgb);
+            using var g = Graphics.FromImage(_background);
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
@@ -259,39 +358,19 @@ namespace Umdd
             DrawBase(g);
             for (int y = 0; y < GridSize; y++)
                 for (int x = 0; x < GridSize; x++)
-                    DrawTile(g, x, y);
+                    if (_ground[x, y] != Ground.Water)
+                        DrawTile(g, x, y);
             foreach (var b in _bakeries)
                 DrawParcelBorder(g, b);
 
-            // Objets en relief : algorithme du peintre, du fond (x+y petit) vers l'avant
-            var objects = new List<(float Depth, Action Draw)>();
-            for (int x = 0; x < GridSize; x++)
-                for (int y = 0; y < GridSize; y++)
-                    if (_treeSize[x, y] > 0)
-                    {
-                        int tx = x, ty = y;
-                        objects.Add((tx + ty + 1, () => DrawTree(g, tx, ty, _treeSize[tx, ty])));
-                    }
             foreach (var b in _bakeries)
-                objects.Add((b.X + b.Y + LotSize, () => DrawBakery(g, b)));
-            foreach (var v in _villas)
-                objects.Add((v.X + v.Y + v.Size, () => DrawVilla(g, v)));
-            foreach (var v in _vans)
             {
-                var (gx, gy) = VanPosition(v);
-                objects.Add((gx + gy, () => DrawVan(g, v, gx, gy)));
+                var anchor = Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f);
+                var size = g.MeasureString(LabelText(b), _labelFont!);
+                var rect = new RectangleF(anchor.X - size.Width / 2 - 8, anchor.Y - size.Height / 2 - 3, size.Width + 16, size.Height + 6);
+                _labels.Add((rect, RoundedRect(rect, rect.Height / 2), b));
             }
-            foreach (var o in objects.OrderBy(o => o.Depth))
-                o.Draw();
-
-            _labelHits.Clear();
-            using (var labelFont = new Font("Segoe UI Semibold", Math.Max(10f, _tileW * 0.3f), GraphicsUnit.Pixel))
-                foreach (var b in _bakeries)
-                    DrawLabel(g, b, labelFont);
-
-            double ms = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
-            _renderMs = _renderMs * 0.9 + ms * 0.1;
-            DrawHud(g);
+            _hintSize = g.MeasureString(Hint, _smallFont!);
         }
 
         private void DrawSky(Graphics g)
@@ -332,8 +411,7 @@ namespace Umdd
                 _ => Shade(Color.FromArgb(118, 176, 92), _grassShade[x, y]),
             };
             Fill(g, c, diamond);
-            using (var edge = new Pen(Shade(c, 0.9f), 1))
-                g.DrawPolygon(edge, diamond);
+            g.DrawPolygon(PenOf(Shade(c, 0.9f), 1), diamond);
 
             if (_ground[x, y] == Ground.Road)
                 DrawRoadMarkings(g, x, y);
@@ -370,16 +448,12 @@ namespace Umdd
             float r = _tileW * 0.17f * size;
             float trunk = _tileW * 0.12f * size;
 
-            using (var shadow = new SolidBrush(Color.FromArgb(60, 0, 0, 0)))
-                g.FillEllipse(shadow, c.X - r * 0.6f, c.Y - r * 0.35f, r * 2.1f, r * 0.8f);
-            using (var bark = new SolidBrush(Color.FromArgb(110, 76, 48)))
-                g.FillRectangle(bark, c.X - r * 0.15f, c.Y - trunk, r * 0.3f, trunk);
+            g.FillEllipse(BrushOf(Color.FromArgb(60, 0, 0, 0)), c.X - r * 0.6f, c.Y - r * 0.35f, r * 2.1f, r * 0.8f);
+            g.FillRectangle(BrushOf(Color.FromArgb(110, 76, 48)), c.X - r * 0.15f, c.Y - trunk, r * 0.3f, trunk);
 
             float fy = c.Y - trunk - r * 0.8f;
-            using (var leaves = new SolidBrush(Color.FromArgb(52, 112, 58)))
-                g.FillEllipse(leaves, c.X - r, fy - r, r * 2, r * 2);
-            using (var light = new SolidBrush(Color.FromArgb(86, 150, 76)))
-                g.FillEllipse(light, c.X - r * 0.75f, fy - r * 0.8f, r * 1.1f, r * 1.1f);
+            g.FillEllipse(BrushOf(Color.FromArgb(52, 112, 58)), c.X - r, fy - r, r * 2, r * 2);
+            g.FillEllipse(BrushOf(Color.FromArgb(86, 150, 76)), c.X - r * 0.75f, fy - r * 0.8f, r * 1.1f, r * 1.1f);
         }
 
         private void DrawBakery(Graphics g, Bakery b)
@@ -429,8 +503,7 @@ namespace Umdd
             var door = Color.FromArgb(110, 75, 50);
 
             // Haie autour du jardin
-            using (var hedge = new Pen(Color.FromArgb(70, 130, 60), Math.Max(1.5f, _tileW / 18)))
-                g.DrawPolygon(hedge, [Iso(X + 0.03f, Y + 0.03f), Iso(X + S - 0.03f, Y + 0.03f), Iso(X + S - 0.03f, Y + S - 0.03f), Iso(X + 0.03f, Y + S - 0.03f)]);
+            g.DrawPolygon(PenOf(Color.FromArgb(70, 130, 60), Math.Max(1.5f, _tileW / 18)), [Iso(X + 0.03f, Y + 0.03f), Iso(X + S - 0.03f, Y + 0.03f), Iso(X + S - 0.03f, Y + S - 0.03f), Iso(X + 0.03f, Y + S - 0.03f)]);
 
             switch (v.Model)
             {
@@ -494,7 +567,7 @@ namespace Umdd
             Fill(g, Shade(c, 0.6f), Iso(x1, y0, z), Iso(x1, y1, z), Iso(x1, yMid, z + r));
 
             // Rangées de tuiles sur le pan avant
-            using var tiles = new Pen(Shade(c, 0.75f), Math.Max(1f, _tileW / 60));
+            var tiles = PenOf(Shade(c, 0.75f), Math.Max(1f, _tileW / 60));
             for (int i = 1; i < 4; i++)
             {
                 float t = i / 4f, ty = y1 + over - t * (y1 + over - yMid);
@@ -522,13 +595,10 @@ namespace Umdd
             float tableH = h * 0.22f, poleH = h * 0.7f;
             DrawBox(g, gx - 0.12f, gy - 0.12f, 0.24f, 0.24f, 0, tableH, Color.FromArgb(240, 236, 228));
             var top = Iso(gx, gy, poleH);
-            using (var pole = new Pen(Color.FromArgb(90, 80, 70), Math.Max(1f, _tileW / 50)))
-                g.DrawLine(pole, Iso(gx, gy, tableH), top);
+            g.DrawLine(PenOf(Color.FromArgb(90, 80, 70), Math.Max(1f, _tileW / 50)), Iso(gx, gy, tableH), top);
             float w = _tileW * 0.5f, hh = w * 0.3f;
-            using (var cloth = new SolidBrush(Shade(c, 1.05f)))
-                g.FillPie(cloth, top.X - w / 2, top.Y - hh * 0.6f, w, hh * 1.4f, 180, 180);
-            using (var rim = new SolidBrush(Shade(c, 0.8f)))
-                g.FillEllipse(rim, top.X - w / 2, top.Y + hh * 0.05f, w, hh * 0.25f);
+            g.FillPie(BrushOf(Shade(c, 1.05f)), top.X - w / 2, top.Y - hh * 0.6f, w, hh * 1.4f, 180, 180);
+            g.FillEllipse(BrushOf(Shade(c, 0.8f)), top.X - w / 2, top.Y + hh * 0.05f, w, hh * 0.25f);
         }
 
         /// <summary>Une douceur sur l'étal : croissant, baguette, gâteau ou macaron.</summary>
@@ -538,41 +608,38 @@ namespace Umdd
             switch (kind)
             {
                 case 0: // croissant
-                    using (var dough = new SolidBrush(Color.FromArgb(226, 160, 70)))
-                        g.FillEllipse(dough, p.X - s / 2, p.Y - s * 0.45f, s, s * 0.45f);
-                    using (var crust = new Pen(Color.FromArgb(170, 104, 40), 1))
-                    {
-                        g.DrawLine(crust, p.X - s * 0.15f, p.Y - s * 0.42f, p.X - s * 0.15f, p.Y - s * 0.05f);
-                        g.DrawLine(crust, p.X + s * 0.15f, p.Y - s * 0.42f, p.X + s * 0.15f, p.Y - s * 0.05f);
-                    }
+                {
+                    g.FillEllipse(BrushOf(Color.FromArgb(226, 160, 70)), p.X - s / 2, p.Y - s * 0.45f, s, s * 0.45f);
+                    var crust = PenOf(Color.FromArgb(170, 104, 40), 1);
+                    g.DrawLine(crust, p.X - s * 0.15f, p.Y - s * 0.42f, p.X - s * 0.15f, p.Y - s * 0.05f);
+                    g.DrawLine(crust, p.X + s * 0.15f, p.Y - s * 0.42f, p.X + s * 0.15f, p.Y - s * 0.05f);
                     break;
+                }
                 case 1: // baguette
-                    using (var bread = new SolidBrush(Color.FromArgb(200, 140, 72)))
-                        g.FillEllipse(bread, p.X - s * 0.7f, p.Y - s * 0.3f, s * 1.4f, s * 0.3f);
-                    using (var cut = new Pen(Color.FromArgb(240, 214, 160), 1))
-                        for (int k = -1; k <= 1; k++)
-                            g.DrawLine(cut, p.X + k * s * 0.35f - s * 0.08f, p.Y - s * 0.22f, p.X + k * s * 0.35f + s * 0.08f, p.Y - s * 0.1f);
+                {
+                    g.FillEllipse(BrushOf(Color.FromArgb(200, 140, 72)), p.X - s * 0.7f, p.Y - s * 0.3f, s * 1.4f, s * 0.3f);
+                    var cut = PenOf(Color.FromArgb(240, 214, 160), 1);
+                    for (int k = -1; k <= 1; k++)
+                        g.DrawLine(cut, p.X + k * s * 0.35f - s * 0.08f, p.Y - s * 0.22f, p.X + k * s * 0.35f + s * 0.08f, p.Y - s * 0.1f);
                     break;
+                }
                 case 2: // gâteau
-                    using (var sponge = new SolidBrush(Color.FromArgb(240, 150, 180)))
-                    {
-                        g.FillRectangle(sponge, p.X - s * 0.4f, p.Y - s * 0.6f, s * 0.8f, s * 0.5f);
-                        g.FillEllipse(sponge, p.X - s * 0.4f, p.Y - s * 0.25f, s * 0.8f, s * 0.3f);
-                    }
-                    using (var cream = new SolidBrush(Color.FromArgb(255, 246, 236)))
-                        g.FillEllipse(cream, p.X - s * 0.4f, p.Y - s * 0.75f, s * 0.8f, s * 0.3f);
-                    using (var cherry = new SolidBrush(Color.FromArgb(200, 30, 50)))
-                        g.FillEllipse(cherry, p.X - s * 0.1f, p.Y - s * 0.9f, s * 0.2f, s * 0.2f);
+                {
+                    var sponge = BrushOf(Color.FromArgb(240, 150, 180));
+                    g.FillRectangle(sponge, p.X - s * 0.4f, p.Y - s * 0.6f, s * 0.8f, s * 0.5f);
+                    g.FillEllipse(sponge, p.X - s * 0.4f, p.Y - s * 0.25f, s * 0.8f, s * 0.3f);
+                    g.FillEllipse(BrushOf(Color.FromArgb(255, 246, 236)), p.X - s * 0.4f, p.Y - s * 0.75f, s * 0.8f, s * 0.3f);
+                    g.FillEllipse(BrushOf(Color.FromArgb(200, 30, 50)), p.X - s * 0.1f, p.Y - s * 0.9f, s * 0.2f, s * 0.2f);
                     break;
+                }
                 default: // macaron
-                    using (var shell = new SolidBrush(Color.FromArgb(160, 210, 150)))
-                    {
-                        g.FillEllipse(shell, p.X - s * 0.4f, p.Y - s * 0.3f, s * 0.8f, s * 0.3f);
-                        g.FillEllipse(shell, p.X - s * 0.4f, p.Y - s * 0.6f, s * 0.8f, s * 0.3f);
-                    }
-                    using (var filling = new SolidBrush(Color.FromArgb(255, 246, 236)))
-                        g.FillRectangle(filling, p.X - s * 0.35f, p.Y - s * 0.38f, s * 0.7f, s * 0.08f);
+                {
+                    var shell = BrushOf(Color.FromArgb(160, 210, 150));
+                    g.FillEllipse(shell, p.X - s * 0.4f, p.Y - s * 0.3f, s * 0.8f, s * 0.3f);
+                    g.FillEllipse(shell, p.X - s * 0.4f, p.Y - s * 0.6f, s * 0.8f, s * 0.3f);
+                    g.FillRectangle(BrushOf(Color.FromArgb(255, 246, 236)), p.X - s * 0.35f, p.Y - s * 0.38f, s * 0.7f, s * 0.08f);
                     break;
+                }
             }
         }
 
@@ -584,8 +651,7 @@ namespace Umdd
                 float rad = _tileW * (0.05f + p * 0.12f);
                 float px = top.X + p * _tileW * 0.3f + MathF.Sin(_time + k) * _tileW * 0.03f;
                 float py = top.Y - p * _tileW * 0.8f;
-                using var brush = new SolidBrush(Color.FromArgb((int)(150 * (1 - p)), 245, 240, 235));
-                g.FillEllipse(brush, px - rad, py - rad, rad * 2, rad * 2);
+                g.FillEllipse(BrushOf(Color.FromArgb((int)(150 * (1 - p)), 245, 240, 235)), px - rad, py - rad, rad * 2, rad * 2);
             }
         }
 
@@ -626,41 +692,30 @@ namespace Umdd
         /// <summary>BP dont l'étiquette est sous le point donné ; la dernière dessinée (au premier plan) gagne.</summary>
         private Bakery? LabelAt(Point p)
         {
-            for (int i = _labelHits.Count - 1; i >= 0; i--)
-                if (_labelHits[i].Rect.Contains(p))
-                    return _labelHits[i].Bakery;
+            for (int i = _labels.Count - 1; i >= 0; i--)
+                if (_labels[i].Rect.Contains(p))
+                    return _labels[i].Bakery;
             return null;
         }
 
-        private void DrawLabel(Graphics g, Bakery b, Font font)
+        private void DrawLabel(Graphics g, RectangleF rect, GraphicsPath path, Bakery b)
         {
-            var anchor = Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f);
-            string text = LabelText(b);
-            var size = g.MeasureString(text, font);
-            var rect = new RectangleF(anchor.X - size.Width / 2 - 8, anchor.Y - size.Height / 2 - 3, size.Width + 16, size.Height + 6);
-            _labelHits.Add((rect, b));
-
-            using var path = RoundedRect(rect, rect.Height / 2);
-            using (var bg = new SolidBrush(Color.FromArgb(200, 40, 26, 36)))
-                g.FillPath(bg, path);
-            using (var border = new Pen(b.Color, 2))
-                g.DrawPath(border, path);
-            g.DrawString(text, font, Brushes.White, rect.X + 8, rect.Y + 3);
+            g.FillPath(BrushOf(Color.FromArgb(200, 40, 26, 36)), path);
+            g.DrawPath(PenOf(b.Color, 2), path);
+            g.DrawString(LabelText(b), _labelFont!, Brushes.White, rect.X + 8, rect.Y + 3);
         }
+
+        private const string Hint = "Échap : quitter";
 
         private void DrawHud(Graphics g)
         {
-            using var title = new Font("Segoe UI", Math.Max(24f, ClientSize.Height * 0.04f), FontStyle.Bold, GraphicsUnit.Pixel);
-            using var small = new Font("Segoe UI", Math.Max(12f, ClientSize.Height * 0.017f), GraphicsUnit.Pixel);
-            using var dim = new SolidBrush(Color.FromArgb(210, 250, 236, 240));
+            var dim = BrushOf(Color.FromArgb(210, 250, 236, 240));
 
-            g.DrawString("UN MONDE DE DOUCEURS", title, Brushes.White, 24, 18);
+            g.DrawString("UN MONDE DE DOUCEURS", _titleFont!, Brushes.White, 24, 18);
             g.DrawString($"Tick {(int)(_time * 2)}  ·  {_bakeries.Count} boulangeries-pâtisseries  ·  {_villas.Count} villas  ·  maillage {GridSize}×{GridSize}  ·  rendu GDI+ {_renderMs:0.0} ms",
-                small, dim, 28, 22 + title.Height);
+                _smallFont!, dim, 28, 22 + _titleFont!.Height);
 
-            const string hint = "Échap : quitter";
-            var hs = g.MeasureString(hint, small);
-            g.DrawString(hint, small, dim, ClientSize.Width - hs.Width - 24, ClientSize.Height - hs.Height - 18);
+            g.DrawString(Hint, _smallFont!, dim, ClientSize.Width - _hintSize.Width - 24, ClientSize.Height - _hintSize.Height - 18);
         }
 
         #endregion
@@ -684,10 +739,24 @@ namespace Umdd
         private PointF[] FaceX(float x, float ya, float yb, float za, float zb) =>
             [Iso(x, ya, za), Iso(x, yb, za), Iso(x, yb, zb), Iso(x, ya, zb)];
 
-        private static void Fill(Graphics g, Color c, params PointF[] points)
+        private void Fill(Graphics g, Color c, params PointF[] points) => g.FillPolygon(BrushOf(c), points);
+
+        /// <summary>Pinceau uni mis en cache par couleur (les couleurs sont des entiers : le cache reste petit, même pour l'eau ou la fumée).</summary>
+        private SolidBrush BrushOf(Color c)
         {
-            using var brush = new SolidBrush(c);
-            g.FillPolygon(brush, points);
+            int key = c.ToArgb();
+            if (!_brushes.TryGetValue(key, out var brush))
+                _brushes[key] = brush = new SolidBrush(c);
+            return brush;
+        }
+
+        /// <summary>Stylo plein mis en cache par couleur et épaisseur ; vidé au redimensionnement (les épaisseurs dépendent de la taille des tuiles).</summary>
+        private Pen PenOf(Color c, float width)
+        {
+            var key = (c.ToArgb(), width);
+            if (!_pens.TryGetValue(key, out var pen))
+                _pens[key] = pen = new Pen(c, width);
+            return pen;
         }
 
         private static Color Shade(Color c, float factor) =>
