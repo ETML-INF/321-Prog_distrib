@@ -46,14 +46,18 @@ namespace Umdd
             new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
         ];
 
-        private enum LandmarkKind { Bank }
+        private enum LandmarkKind { Bank, Police }
 
-        /// <summary>Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.</summary>
-        private record Landmark(LandmarkKind Kind, string Name, int X, int Y, int Size, Color Color);
+        /// <summary>
+        /// Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.
+        /// LabelHeight : altitude de l'étiquette, en largeurs de tuile, pour qu'elle passe au-dessus du bâtiment.
+        /// </summary>
+        private record Landmark(LandmarkKind Kind, string Name, int X, int Y, int Size, Color Color, float LabelHeight);
 
         private readonly List<Landmark> _landmarks =
         [
-            new(LandmarkKind.Bank, "Banque", 16, 16, 3, Color.FromArgb(225, 185, 70)), // au centre-ville, à l'angle du carrefour des routes 19
+            new(LandmarkKind.Bank, "Banque", 16, 16, 3, Color.FromArgb(225, 185, 70), 1.9f),   // au centre-ville, à l'angle du carrefour des routes 19
+            new(LandmarkKind.Police, "Police", 26, 16, 3, Color.FromArgb(80, 130, 230), 2.3f), // supervision, à l'angle des routes 29 et 19
         ];
 
         private const int VillaCount = 50;
@@ -386,8 +390,8 @@ namespace Umdd
 
             foreach (var b in _bakeries)
                 AddLabel(g, Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f), LabelText(b), b.Color, b);
-            foreach (var l in _landmarks) // plus haut que les BP : l'étiquette flotte au-dessus du toit
-                AddLabel(g, Iso(l.X + l.Size / 2f, l.Y + l.Size / 2f, _tileW * 1.9f), l.Name, l.Color, null);
+            foreach (var l in _landmarks)
+                AddLabel(g, Iso(l.X + l.Size / 2f, l.Y + l.Size / 2f, _tileW * l.LabelHeight), l.Name, l.Color, null);
             _hintSize = g.MeasureString(Hint, _smallFont!);
         }
 
@@ -580,7 +584,97 @@ namespace Umdd
             switch (l.Kind)
             {
                 case LandmarkKind.Bank: DrawBank(g, l.X, l.Y); break;
+                case LandmarkKind.Police: DrawPoliceStation(g, l.X, l.Y); break;
             }
+        }
+
+        /// <summary>
+        /// Poste de police (lotissement 3x3) : bâtiment à deux niveaux et toit plat, entrée côté route (+x),
+        /// antenne radio à feu clignotant et voiture de patrouille garée devant, gyrophare allumé.
+        /// </summary>
+        private void DrawPoliceStation(Graphics g, float X, float Y)
+        {
+            float h = _tileW * 0.9f, rim = h * 0.06f;
+            var wall = Color.FromArgb(220, 226, 234);
+            var navy = Color.FromArgb(35, 60, 120);
+            var glass = Color.FromArgb(150, 190, 220);
+            bool blink = _time % 1f < 0.5f;
+
+            // Parking devant (côté +y), avec ses lignes de marquage
+            Fill(g, Color.FromArgb(105, 104, 110), Iso(X + 0.2f, Y + 2.0f), Iso(X + 2.8f, Y + 2.0f), Iso(X + 2.8f, Y + 2.85f), Iso(X + 0.2f, Y + 2.85f));
+            var line = PenOf(Color.FromArgb(235, 235, 230), Math.Max(1f, _tileW / 50));
+            for (int i = 0; i < 4; i++)
+            {
+                float lx = X + 0.4f + i * 0.7f;
+                g.DrawLine(line, Iso(lx, Y + 2.1f), Iso(lx, Y + 2.75f));
+            }
+
+            // Bâtiment principal : deux rangées de fenêtres, bandeau bleu en haut des façades
+            float x0 = X + 0.3f, y0 = Y + 0.3f, x1 = X + 2.3f, y1 = Y + 1.8f, yMid = (y0 + y1) / 2;
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, 0, h, wall);
+            for (int floor = 0; floor < 2; floor++)
+            {
+                float za = h * (0.12f + floor * 0.4f), zb = za + h * 0.2f;
+                for (int i = 0; i < 5; i++)
+                {
+                    float xa = x0 + 0.15f + i * 0.38f;
+                    Fill(g, glass, FaceY(y1, xa, xa + 0.22f, za, zb));
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    if (floor == 0 && i is 1 or 2) continue; // place pour l'entrée
+                    float ya = y0 + 0.12f + i * 0.35f;
+                    Fill(g, glass, FaceX(x1, ya, ya + 0.2f, za, zb));
+                }
+            }
+            Fill(g, navy, FaceY(y1, x0, x1, h * 0.86f, h * 0.97f));
+            Fill(g, Shade(navy, 0.8f), FaceX(x1, y0, y1, h * 0.86f, h * 0.97f));
+
+            // Entrée vitrée sous un auvent bleu
+            Fill(g, Color.FromArgb(120, 160, 200), FaceX(x1, yMid - 0.2f, yMid + 0.2f, 0, h * 0.32f));
+            DrawBox(g, x1, yMid - 0.32f, 0.3f, 0.64f, h * 0.36f, h * 0.05f, navy);
+
+            // Toit plat avec acrotère, cage d'escalier et antenne radio de supervision
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, h, rim, Color.FromArgb(150, 155, 165));
+            DrawBox(g, x0 + 0.2f, y0 + 0.2f, 0.45f, 0.4f, h + rim, h * 0.2f, wall);
+            var foot = Iso(x1 - 0.3f, y0 + 0.25f, h + rim);
+            var top = Iso(x1 - 0.3f, y0 + 0.25f, h + rim + _tileW * 0.6f);
+            var mast = PenOf(Color.FromArgb(90, 95, 105), Math.Max(1f, _tileW / 40));
+            g.DrawLine(mast, foot, top);
+            for (int k = 1; k <= 2; k++) // barreaux d'antenne
+            {
+                float ty = top.Y + (foot.Y - top.Y) * k * 0.25f, half = _tileW * (0.04f + k * 0.03f);
+                g.DrawLine(mast, top.X - half, ty, top.X + half, ty);
+            }
+            float lr = _tileW * 0.035f;
+            if (blink)
+                g.FillEllipse(BrushOf(Color.FromArgb(90, 255, 60, 60)), top.X - lr * 3, top.Y - lr * 3, lr * 6, lr * 6);
+            g.FillEllipse(BrushOf(blink ? Color.FromArgb(255, 70, 70) : Color.FromArgb(120, 30, 30)), top.X - lr, top.Y - lr, lr * 2, lr * 2);
+
+            // Voiture de patrouille, gyrophare bleu / rouge en alternance
+            DrawPoliceCar(g, X + 1.0f, Y + 2.42f, (int)(_time * 4) % 2 == 0);
+        }
+
+        private void DrawPoliceCar(Graphics g, float cx, float cy, bool phase)
+        {
+            float bh = _tileW * 0.12f, ch = _tileW * 0.08f, lh = _tileW * 0.03f;
+            var navy = Color.FromArgb(35, 60, 120);
+            var blue = Color.FromArgb(60, 120, 255);
+            var red = Color.FromArgb(255, 60, 60);
+
+            Fill(g, Color.FromArgb(60, 0, 0, 0), Iso(cx - 0.3f, cy - 0.05f), Iso(cx + 0.36f, cy - 0.05f), Iso(cx + 0.36f, cy + 0.21f), Iso(cx - 0.3f, cy + 0.21f));
+            DrawBox(g, cx - 0.3f, cy - 0.13f, 0.6f, 0.26f, 0, bh, Color.FromArgb(245, 245, 245));
+            Fill(g, navy, FaceY(cy + 0.13f, cx - 0.3f, cx + 0.3f, bh * 0.35f, bh * 0.65f));
+            DrawBox(g, cx - 0.12f, cy - 0.11f, 0.26f, 0.22f, bh, ch, navy);
+
+            // Rampe lumineuse : deux feux sur le toit, de l'arrière vers l'avant
+            float z = bh + ch;
+            var (left, right) = phase ? (blue, red) : (red, blue);
+            DrawBox(g, cx - 0.02f, cy - 0.1f, 0.08f, 0.1f, z, lh, left);
+            DrawBox(g, cx - 0.02f, cy, 0.08f, 0.1f, z, lh, right);
+            var glowAt = Iso(cx + 0.02f, phase ? cy - 0.05f : cy + 0.05f, z + lh);
+            float gr = _tileW * 0.1f;
+            g.FillEllipse(BrushOf(Color.FromArgb(80, phase ? blue : red)), glowAt.X - gr, glowAt.Y - gr, gr * 2, gr * 2);
         }
 
         /// <summary>Banque néoclassique (lotissement 3x3) : soubassement, colonnade et fronton tournés vers la route (+x).</summary>
