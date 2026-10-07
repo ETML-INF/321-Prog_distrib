@@ -46,7 +46,7 @@ namespace Umdd
             new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
         ];
 
-        private enum LandmarkKind { Bank, Police, Cooperative }
+        private enum LandmarkKind { Bank, Police, Cooperative, Telecom }
 
         /// <summary>
         /// Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.
@@ -59,6 +59,7 @@ namespace Umdd
             new(LandmarkKind.Bank, "Banque", 16, 16, 3, Color.FromArgb(225, 185, 70), 1.9f),   // au centre-ville, à l'angle du carrefour des routes 19
             new(LandmarkKind.Police, "Police", 26, 16, 3, Color.FromArgb(80, 130, 230), 2.3f), // supervision, à l'angle des routes 29 et 19
             new(LandmarkKind.Cooperative, "Coopérative", 26, 6, 3, Color.FromArgb(140, 210, 240), 1.6f), // entrepôt frigorifique, à l'angle des routes 29 et 9
+            new(LandmarkKind.Telecom, "Télécoms", 6, 16, 3, Color.FromArgb(190, 140, 250), 3.1f),        // service de chat, à l'angle des routes 9 et 19
         ];
 
         private const int VillaCount = 50;
@@ -587,6 +588,122 @@ namespace Umdd
                 case LandmarkKind.Bank: DrawBank(g, l.X, l.Y); break;
                 case LandmarkKind.Police: DrawPoliceStation(g, l.X, l.Y); break;
                 case LandmarkKind.Cooperative: DrawColdStore(g, l.X, l.Y); break;
+                case LandmarkKind.Telecom: DrawTelecom(g, l.X, l.Y, l.Color); break;
+            }
+        }
+
+        /// <summary>
+        /// Télécoms (lotissement 3x3), pour le service de chat : pylône rouge et blanc qui émet des ondes radio,
+        /// bâtiment technique à bandeaux vitrés avec paraboles sur le toit, et bulles de dialogue qui s'en échappent.
+        /// </summary>
+        private void DrawTelecom(Graphics g, float X, float Y, Color accent)
+        {
+            // Pylône à l'arrière du lotissement, dessiné avant le bâtiment qui est devant lui
+            float H = _tileW * 1.7f;
+            DrawLatticeTower(g, X + 0.5f, Y + 0.8f, H, accent);
+
+            // Bâtiment technique : bandeaux vitrés filants, entrée côté route
+            float h = _tileW * 0.55f, slab = h * 0.05f;
+            float x0 = X + 1.0f, y0 = Y + 0.3f, x1 = X + 2.5f, y1 = Y + 2.4f, yMid = (y0 + y1) / 2;
+            var glass = Color.FromArgb(60, 80, 120);
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, 0, h, Color.FromArgb(205, 208, 218));
+            Fill(g, glass, FaceY(y1, x0 + 0.08f, x1 - 0.08f, h * 0.2f, h * 0.42f));
+            Fill(g, glass, FaceY(y1, x0 + 0.08f, x1 - 0.08f, h * 0.58f, h * 0.8f));
+            Fill(g, glass, FaceX(x1, y0 + 0.08f, yMid - 0.3f, h * 0.2f, h * 0.42f));
+            Fill(g, glass, FaceX(x1, yMid + 0.3f, y1 - 0.08f, h * 0.2f, h * 0.42f));
+            Fill(g, glass, FaceX(x1, y0 + 0.08f, y1 - 0.08f, h * 0.58f, h * 0.8f));
+            Fill(g, Color.FromArgb(120, 160, 200), FaceX(x1, yMid - 0.2f, yMid + 0.2f, 0, h * 0.4f));
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, h, slab, Color.FromArgb(160, 163, 172));
+
+            // Paraboles sur le toit
+            for (int i = 0; i < 2; i++)
+                DrawDish(g, Iso(x0 + 0.45f, y0 + 0.5f + i * 0.8f, h + slab));
+
+            // Bulles de dialogue qui montent du toit en alternance, puis s'effacent
+            for (int k = 0; k < 2; k++)
+            {
+                float p = (_time * 0.3f + k * 0.5f) % 1f;
+                var at = Iso(x0 + 0.9f, yMid + (k == 0 ? -0.45f : 0.45f), h + slab + _tileW * (0.15f + p * 0.6f));
+                DrawChatBubble(g, at, (int)(255 * (1 - p) * Math.Min(1f, p * 6)), accent);
+            }
+        }
+
+        /// <summary>Pylône en treillis effilé, rayé rouge et blanc, avec antennes, feu d'obstacle et ondes radio animées.</summary>
+        private void DrawLatticeTower(Graphics g, float cx, float cy, float H, Color waves)
+        {
+            const int levels = 6;
+            float bottom = 0.22f, top = 0.05f, w = Math.Max(1f, _tileW / 45);
+            float Half(int i) => bottom + (top - bottom) * i / levels;
+            float Z(int i) => H * i / levels;
+
+            // Montants (les 4 visibles, la structure est ajourée), puis entretoises en zigzag sur les faces avant
+            var leg = PenOf(Color.FromArgb(200, 60, 55), w);
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sy = -1; sy <= 1; sy += 2)
+                    g.DrawLine(leg, Iso(cx + sx * bottom, cy + sy * bottom), Iso(cx + sx * top, cy + sy * top, H));
+            for (int i = 0; i < levels; i++)
+            {
+                var brace = PenOf(i % 2 == 0 ? Color.FromArgb(200, 60, 55) : Color.FromArgb(245, 245, 245), w);
+                float a = Half(i), b = Half(i + 1), s = i % 2 == 0 ? 1 : -1;
+                g.DrawLine(brace, Iso(cx - s * a, cy + a, Z(i)), Iso(cx + s * b, cy + b, Z(i + 1)));
+                g.DrawLine(brace, Iso(cx + a, cy - s * a, Z(i)), Iso(cx + b, cy + s * b, Z(i + 1)));
+                g.DrawLine(brace, Iso(cx - a, cy + a, Z(i)), Iso(cx + a, cy + a, Z(i)));
+                g.DrawLine(brace, Iso(cx + a, cy - a, Z(i)), Iso(cx + a, cy + a, Z(i)));
+            }
+
+            // Plateforme technique et antennes-panneaux
+            float pz = H * 0.72f, ph = H * 0.05f, pr = Half(4) + 0.04f;
+            DrawBox(g, cx - pr, cy - pr, pr * 2, pr * 2, pz, ph, Color.FromArgb(235, 235, 235));
+            DrawBox(g, cx + pr - 0.03f, cy - 0.04f, 0.04f, 0.08f, pz + ph, H * 0.12f, Color.FromArgb(225, 225, 230));
+            DrawBox(g, cx - 0.04f, cy + pr - 0.03f, 0.08f, 0.04f, pz + ph, H * 0.12f, Color.FromArgb(225, 225, 230));
+
+            // Mât sommital et feu d'obstacle clignotant
+            var tip = Iso(cx, cy, H * 1.12f);
+            g.DrawLine(PenOf(Color.FromArgb(200, 60, 55), w), Iso(cx, cy, H), tip);
+            bool on = (_time + 0.3f) % 1.2f < 0.4f;
+            float lr = _tileW * 0.03f;
+            if (on)
+                g.FillEllipse(BrushOf(Color.FromArgb(90, 255, 60, 60)), tip.X - lr * 3, tip.Y - lr * 3, lr * 6, lr * 6);
+            g.FillEllipse(BrushOf(on ? Color.FromArgb(255, 70, 70) : Color.FromArgb(120, 30, 30)), tip.X - lr, tip.Y - lr, lr * 2, lr * 2);
+
+            // Ondes radio : arcs qui s'éloignent de chaque côté du sommet en s'estompant
+            var source = Iso(cx, cy, H * 0.95f);
+            for (int k = 0; k < 3; k++)
+            {
+                float p = (_time * 0.6f + k / 3f) % 1f, r = _tileW * (0.15f + p * 0.8f);
+                var pen = PenOf(Color.FromArgb((int)(200 * (1 - p)), waves), Math.Max(1.5f, _tileW / 30));
+                var box = new RectangleF(source.X - r, source.Y - r, r * 2, r * 2);
+                g.DrawArc(pen, box, -30, 60);
+                g.DrawArc(pen, box, 150, 60);
+            }
+        }
+
+        /// <summary>Parabole sur pied, tournée vers le ciel.</summary>
+        private void DrawDish(Graphics g, PointF foot)
+        {
+            float stand = _tileW * 0.1f, w = _tileW * 0.24f, hh = _tileW * 0.15f;
+            var c = new PointF(foot.X, foot.Y - stand);
+            g.DrawLine(PenOf(Color.FromArgb(110, 115, 125), Math.Max(1f, _tileW / 50)), foot, c);
+            g.FillEllipse(BrushOf(Color.FromArgb(240, 242, 245)), c.X - w / 2, c.Y - hh / 2, w, hh);
+            g.DrawEllipse(PenOf(Color.FromArgb(170, 175, 185), 1), c.X - w / 2, c.Y - hh / 2, w, hh);
+            g.DrawLine(PenOf(Color.FromArgb(110, 115, 125), 1), c.X, c.Y, c.X + w * 0.25f, c.Y - hh * 0.6f); // bras du cornet
+        }
+
+        /// <summary>Bulle de dialogue « … » (dessinée face à l'écran), avec transparence.</summary>
+        private void DrawChatBubble(Graphics g, PointF tail, int alpha, Color accent)
+        {
+            if (alpha <= 0) return;
+            float w = _tileW * 0.34f, hh = _tileW * 0.21f;
+            float left = tail.X - w * 0.3f, topY = tail.Y - hh - _tileW * 0.06f;
+            var paper = BrushOf(Color.FromArgb(alpha, 255, 255, 255));
+            g.FillEllipse(paper, left, topY, w, hh);
+            g.FillPolygon(paper, [new PointF(tail.X - _tileW * 0.02f, topY + hh * 0.8f), new PointF(tail.X + _tileW * 0.06f, topY + hh * 0.8f), tail]);
+            var dot = BrushOf(Color.FromArgb(alpha, accent));
+            float d = _tileW * 0.045f;
+            for (int i = -1; i <= 1; i++)
+            {
+                float dx = left + w / 2 + i * d * 1.6f;
+                g.FillEllipse(dot, dx - d / 2, topY + hh / 2 - d / 2, d, d);
             }
         }
 
