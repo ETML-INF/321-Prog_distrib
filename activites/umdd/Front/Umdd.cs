@@ -17,7 +17,7 @@ namespace Umdd
         /// <summary>Indices des routes (lignes et colonnes) qui quadrillent la ville.</summary>
         private static readonly int[] Roads = [9, 19, 29];
 
-        private enum Ground { Grass, Road, Water, Lot, Garden }
+        private enum Ground { Grass, Road, Water, Lot, Garden, Plaza }
 
         /// <summary>Boulangerie-pâtisserie (BP) posée sur un lotissement de 2x2 cases.</summary>
         private record Bakery(string Name, int Parcel, int X, int Y, Color Color);
@@ -44,6 +44,16 @@ namespace Umdd
             new("BP J", 10, 20, 14, Color.FromArgb(165, 115, 85)), // chocolat
             new("BP K", 11, 35, 30, Color.FromArgb(250, 175, 150)),// pêche
             new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
+        ];
+
+        private enum LandmarkKind { Bank }
+
+        /// <summary>Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.</summary>
+        private record Landmark(LandmarkKind Kind, string Name, int X, int Y, int Size, Color Color);
+
+        private readonly List<Landmark> _landmarks =
+        [
+            new(LandmarkKind.Bank, "Banque", 16, 16, 3, Color.FromArgb(225, 185, 70)), // au centre-ville, à l'angle du carrefour des routes 19
         ];
 
         private const int VillaCount = 50;
@@ -90,8 +100,11 @@ namespace Umdd
         private float _time;
         private double _renderMs;
 
-        /// <summary>Étiquettes des BP (zone écran + contour arrondi), calculées une fois par taille de fenêtre ; sert aussi à savoir sur quelle BP on clique.</summary>
-        private readonly List<(RectangleF Rect, GraphicsPath Path, Bakery Bakery)> _labels = [];
+        /// <summary>
+        /// Étiquettes des BP et des bâtiments publics (zone écran + contour arrondi), calculées une fois par taille de fenêtre.
+        /// Sert aussi à savoir sur quelle BP on clique (Bakery est null pour un bâtiment public, non cliquable).
+        /// </summary>
+        private readonly List<(RectangleF Rect, GraphicsPath Path, string Text, Color Color, Bakery? Bakery)> _labels = [];
 
         /// <summary>Objets en relief immobiles (arbres, BP, villas), déjà triés par profondeur.</summary>
         private (float Depth, Action<Graphics> Draw)[] _scenery = [];
@@ -156,6 +169,12 @@ namespace Umdd
                     for (int dy = 0; dy < LotSize; dy++)
                         _ground[b.X + dx, b.Y + dy] = Ground.Lot;
 
+            // Parvis des bâtiments publics
+            foreach (var l in _landmarks)
+                for (int dx = 0; dx < l.Size; dx++)
+                    for (int dy = 0; dy < l.Size; dy++)
+                        _ground[l.X + dx, l.Y + dy] = Ground.Plaza;
+
             var rng = new Random(7); // graine fixe pour un rendu reproductible
             PlaceVillas(rng);
 
@@ -182,6 +201,8 @@ namespace Umdd
                 scenery.Add((b.X + b.Y + LotSize, g => DrawBakery(g, b)));
             foreach (var v in _villas)
                 scenery.Add((v.X + v.Y + v.Size, g => DrawVilla(g, v)));
+            foreach (var l in _landmarks)
+                scenery.Add((l.X + l.Y + l.Size, g => DrawLandmark(g, l)));
             _scenery = [.. scenery.OrderBy(o => o.Depth)];
         }
 
@@ -226,7 +247,7 @@ namespace Umdd
                     bool corner = (cx == x - 1 || cx == x + size) && (cy == y - 1 || cy == y + size);
                     var ground = GroundAt(cx, cy);
                     if (inside && ground != Ground.Grass) return false;
-                    if (!inside && ground is Ground.Lot or Ground.Garden or Ground.Water) return false;
+                    if (!inside && ground is Ground.Lot or Ground.Garden or Ground.Water or Ground.Plaza) return false;
                     if (!inside && !corner && ground == Ground.Road) touchesRoad = true;
                 }
             return touchesRoad;
@@ -235,14 +256,14 @@ namespace Umdd
         private Ground? GroundAt(int x, int y) =>
             x >= 0 && y >= 0 && x < GridSize && y < GridSize ? _ground[x, y] : null;
 
-        /// <summary>Vrai si une case voisine est occupée par une BP ou une villa (on n'y plante pas d'arbre).</summary>
+        /// <summary>Vrai si une case voisine est occupée par une BP, une villa ou un bâtiment public (on n'y plante pas d'arbre).</summary>
         private bool IsNearBuilding(int x, int y)
         {
             for (int dx = -1; dx <= 1; dx++)
                 for (int dy = -1; dy <= 1; dy++)
                 {
                     int nx = x + dx, ny = y + dy;
-                    if (nx >= 0 && ny >= 0 && nx < GridSize && ny < GridSize && _ground[nx, ny] is Ground.Lot or Ground.Garden)
+                    if (nx >= 0 && ny >= 0 && nx < GridSize && ny < GridSize && _ground[nx, ny] is Ground.Lot or Ground.Garden or Ground.Plaza)
                         return true;
                 }
             return false;
@@ -274,7 +295,7 @@ namespace Umdd
         {
             _background?.Dispose();
             _background = null;
-            foreach (var (_, path, _) in _labels) path.Dispose();
+            foreach (var label in _labels) label.Path.Dispose();
             _labels.Clear();
             foreach (var p in _pens.Values) p.Dispose();
             _pens.Clear();
@@ -334,7 +355,7 @@ namespace Umdd
                 _scenery[i++].Draw(g);
 
             foreach (var label in _labels)
-                DrawLabel(g, label.Rect, label.Path, label.Bakery);
+                DrawLabel(g, label.Rect, label.Path, label.Text, label.Color);
 
             double ms = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
             _renderMs = _renderMs * 0.9 + ms * 0.1;
@@ -364,13 +385,18 @@ namespace Umdd
                 DrawParcelBorder(g, b);
 
             foreach (var b in _bakeries)
-            {
-                var anchor = Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f);
-                var size = g.MeasureString(LabelText(b), _labelFont!);
-                var rect = new RectangleF(anchor.X - size.Width / 2 - 8, anchor.Y - size.Height / 2 - 3, size.Width + 16, size.Height + 6);
-                _labels.Add((rect, RoundedRect(rect, rect.Height / 2), b));
-            }
+                AddLabel(g, Iso(b.X + 1f, b.Y + 1f, _tileW * 1.5f), LabelText(b), b.Color, b);
+            foreach (var l in _landmarks) // plus haut que les BP : l'étiquette flotte au-dessus du toit
+                AddLabel(g, Iso(l.X + l.Size / 2f, l.Y + l.Size / 2f, _tileW * 1.9f), l.Name, l.Color, null);
             _hintSize = g.MeasureString(Hint, _smallFont!);
+        }
+
+        /// <summary>Mesure une étiquette centrée sur son point d'ancrage et prépare son contour arrondi.</summary>
+        private void AddLabel(Graphics g, PointF anchor, string text, Color color, Bakery? bakery)
+        {
+            var size = g.MeasureString(text, _labelFont!);
+            var rect = new RectangleF(anchor.X - size.Width / 2 - 8, anchor.Y - size.Height / 2 - 3, size.Width + 16, size.Height + 6);
+            _labels.Add((rect, RoundedRect(rect, rect.Height / 2), text, color, bakery));
         }
 
         private void DrawSky(Graphics g)
@@ -407,6 +433,7 @@ namespace Umdd
                 Ground.Road => Color.FromArgb(84, 82, 88),
                 Ground.Water => WaterColor(x, y),
                 Ground.Lot => Color.FromArgb(206, 192, 170),
+                Ground.Plaza => Color.FromArgb(196, 192, 186),
                 Ground.Garden => Shade(Color.FromArgb(140, 196, 104), _grassShade[x, y]),
                 _ => Shade(Color.FromArgb(118, 176, 92), _grassShade[x, y]),
             };
@@ -548,6 +575,61 @@ namespace Umdd
             }
         }
 
+        private void DrawLandmark(Graphics g, Landmark l)
+        {
+            switch (l.Kind)
+            {
+                case LandmarkKind.Bank: DrawBank(g, l.X, l.Y); break;
+            }
+        }
+
+        /// <summary>Banque néoclassique (lotissement 3x3) : soubassement, colonnade et fronton tournés vers la route (+x).</summary>
+        private void DrawBank(Graphics g, float X, float Y)
+        {
+            float hp = _tileW * 0.12f, h = _tileW * 0.75f, eh = _tileW * 0.1f, r = _tileW * 0.4f;
+            var stone = Color.FromArgb(232, 224, 206);
+            var marble = Color.FromArgb(246, 243, 236);
+            var plinth = Color.FromArgb(205, 198, 186);
+
+            // Soubassement, et deux marches qui descendent vers la route
+            DrawBox(g, X + 0.2f, Y + 0.25f, 2.3f, 2.5f, 0, hp, plinth);
+            DrawBox(g, X + 2.5f, Y + 0.8f, 0.15f, 1.4f, 0, hp * 0.66f, plinth);
+            DrawBox(g, X + 2.65f, Y + 0.8f, 0.15f, 1.4f, 0, hp * 0.33f, plinth);
+
+            // Salle des guichets : hautes fenêtres sur le côté, porte de bronze sous le portique
+            float x0 = X + 0.4f, y0 = Y + 0.45f, x1 = X + 1.85f, y1 = Y + 2.55f, xp = X + 2.4f, yMid = (y0 + y1) / 2;
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, hp, h, stone);
+            var glass = Color.FromArgb(120, 150, 175);
+            for (int i = 0; i < 3; i++)
+            {
+                float xa = x0 + 0.2f + i * 0.42f;
+                Fill(g, glass, FaceY(y1, xa, xa + 0.2f, hp + h * 0.2f, hp + h * 0.75f));
+            }
+            Fill(g, Color.FromArgb(150, 110, 60), FaceX(x1, yMid - 0.25f, yMid + 0.25f, hp, hp + h * 0.65f));
+
+            // Colonnade, de la plus lointaine à la plus proche
+            const int columns = 6;
+            for (int i = 0; i < columns; i++)
+            {
+                float cy = y0 + 0.05f + i * (y1 - y0 - 0.22f) / (columns - 1);
+                DrawBox(g, xp - 0.17f, cy, 0.12f, 0.12f, hp, h, marble);
+            }
+
+            // Entablement, toit de cuivre patiné et fronton de pierre
+            float z = hp + h + eh;
+            DrawBox(g, x0, y0, xp - x0, y1 - y0, hp + h, eh, stone);
+            DrawGableRoof(g, x0, y0, xp, y1, z, r, Color.FromArgb(105, 160, 140));
+            Fill(g, Shade(stone, 0.8f),
+                Iso(xp, y0 + 0.15f, z + _tileW * 0.03f), Iso(xp, y1 - 0.15f, z + _tileW * 0.03f), Iso(xp, yMid, z + r - _tileW * 0.06f));
+
+            // Pièce d'or au centre du fronton
+            var coin = Iso(xp, yMid, z + r * 0.4f);
+            float cr = _tileW * 0.07f;
+            var gold = Color.FromArgb(225, 185, 70);
+            g.FillEllipse(BrushOf(gold), coin.X - cr, coin.Y - cr, cr * 2, cr * 2);
+            g.DrawEllipse(PenOf(Shade(gold, 0.7f), Math.Max(1f, _tileW / 60)), coin.X - cr, coin.Y - cr, cr * 2, cr * 2);
+        }
+
         /// <summary>Toit en croupe : quatre pans qui se rejoignent en un sommet.</summary>
         private void DrawHipRoof(Graphics g, float x0, float y0, float x1, float y1, float z, float r, Color c)
         {
@@ -687,7 +769,7 @@ namespace Umdd
             }
         }
 
-        private static string LabelText(Bakery b) => $"{b.Name}  ·  parcelle {b.Parcel}";
+        private static string LabelText(Bakery b) => $"{b.Name}";
 
         /// <summary>BP dont l'étiquette est sous le point donné ; la dernière dessinée (au premier plan) gagne.</summary>
         private Bakery? LabelAt(Point p)
@@ -698,11 +780,11 @@ namespace Umdd
             return null;
         }
 
-        private void DrawLabel(Graphics g, RectangleF rect, GraphicsPath path, Bakery b)
+        private void DrawLabel(Graphics g, RectangleF rect, GraphicsPath path, string text, Color color)
         {
             g.FillPath(BrushOf(Color.FromArgb(200, 40, 26, 36)), path);
-            g.DrawPath(PenOf(b.Color, 2), path);
-            g.DrawString(LabelText(b), _labelFont!, Brushes.White, rect.X + 8, rect.Y + 3);
+            g.DrawPath(PenOf(color, 2), path);
+            g.DrawString(text, _labelFont!, Brushes.White, rect.X + 8, rect.Y + 3);
         }
 
         private const string Hint = "Échap : quitter";
