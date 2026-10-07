@@ -46,7 +46,7 @@ namespace Umdd
             new("BP L", 12, 30, 36, Color.FromArgb(190, 220, 110)),// citron vert
         ];
 
-        private enum LandmarkKind { Bank, Police, Cooperative, Telecom, Registry }
+        private enum LandmarkKind { Bank, Police, Cooperative, Telecom, Registry, Library }
 
         /// <summary>
         /// Bâtiment public symbolisant une fonctionnalité du système distribué, posé sur un lotissement dallé de Size x Size cases.
@@ -61,6 +61,14 @@ namespace Umdd
             new(LandmarkKind.Cooperative, "Coopérative", 26, 6, 3, Color.FromArgb(140, 210, 240), 1.6f), // entrepôt frigorifique, à l'angle des routes 29 et 9
             new(LandmarkKind.Telecom, "Télécoms", 6, 16, 3, Color.FromArgb(190, 140, 250), 3.1f),        // service de chat, à l'angle des routes 9 et 19
             new(LandmarkKind.Registry, "Registre du commerce", 6, 26, 3, Color.FromArgb(90, 170, 90), 2.3f), // annuaire, à l'angle des routes 9 et 29
+            new(LandmarkKind.Library, "Bibliothèque", 26, 26, 3, Color.FromArgb(190, 70, 90), 2.0f),          // archives (logging), au bord de l'étang
+        ];
+
+        /// <summary>Couleurs des dos de livres de la bibliothèque.</summary>
+        private static readonly Color[] BookColors =
+        [
+            Color.FromArgb(170, 50, 50), Color.FromArgb(50, 90, 150), Color.FromArgb(60, 130, 80),
+            Color.FromArgb(200, 160, 60), Color.FromArgb(120, 70, 130), Color.FromArgb(220, 210, 190),
         ];
 
         private const int VillaCount = 50;
@@ -591,7 +599,92 @@ namespace Umdd
                 case LandmarkKind.Cooperative: DrawColdStore(g, l.X, l.Y); break;
                 case LandmarkKind.Telecom: DrawTelecom(g, l.X, l.Y, l.Color); break;
                 case LandmarkKind.Registry: DrawRegistry(g, l.X, l.Y); break;
+                case LandmarkKind.Library: DrawLibrary(g, l.X, l.Y); break;
             }
+        }
+
+        /// <summary>
+        /// Bibliothèque (lotissement 3x3), pour les archives : bâtiment de brique à salle de lecture sous coupole.
+        /// Derrière la grande verrière, les rayonnages se remplissent livre après livre (on n'écrit qu'à la fin, comme un journal),
+        /// puis se vident d'un coup une fois pleins : c'est la rotation des logs.
+        /// </summary>
+        private void DrawLibrary(Graphics g, float X, float Y)
+        {
+            float h = _tileW * 0.7f, slab = h * 0.06f;
+            var brick = Color.FromArgb(170, 95, 75);
+            var stone = Color.FromArgb(235, 228, 212);
+            float x0 = X + 0.3f, y0 = Y + 0.3f, x1 = X + 2.4f, y1 = Y + 2.0f, yMid = (y0 + y1) / 2;
+
+            DrawBox(g, x0, y0, x1 - x0, y1 - y0, 0, h, brick);
+            Fill(g, Shade(stone, 0.85f), FaceY(y1, x0, x1, 0, h * 0.08f));
+            Fill(g, Shade(stone, 0.65f), FaceX(x1, y0, y1, 0, h * 0.08f));
+
+            // Grande verrière sur les rayonnages
+            float wx0 = x0 + 0.2f, wx1 = x1 - 0.2f, wz0 = h * 0.12f, wz1 = h * 0.82f;
+            Fill(g, Color.FromArgb(60, 45, 40), FaceY(y1, wx0, wx1, wz0, wz1));
+
+            const float step = 0.067f, bookW = 0.055f;
+            const int rows = 3;
+            int perRow = (int)((wx1 - wx0 - 0.04f) / step), total = perRow * rows;
+            int filled = Math.Min(total, (int)(_time * 4) % (total + 6)); // court temps d'arrêt une fois plein, puis rotation
+            var wood = PenOf(Color.FromArgb(150, 110, 70), Math.Max(1f, _tileW / 60));
+            for (int r = 0; r < rows; r++)
+            {
+                float zr = h * (0.6f - r * 0.22f); // on remplit de haut en bas, de gauche à droite
+                for (int i = 0; i < perRow; i++)
+                {
+                    int index = r * perRow + i;
+                    if (index >= filled) break;
+                    float bx = wx0 + 0.02f + i * step, bh = h * (0.13f + index * 7 % 5 * 0.01f);
+                    Fill(g, BookColors[index * 5 % BookColors.Length], FaceY(y1, bx, bx + bookW, zr, zr + bh));
+                }
+                g.DrawLine(wood, Iso(wx0, y1, zr), Iso(wx1, y1, zr));
+            }
+            var frame = PenOf(stone, Math.Max(1f, _tileW / 45));
+            for (int k = 1; k < 4; k++)
+            {
+                float mx = wx0 + k * (wx1 - wx0) / 4;
+                g.DrawLine(frame, Iso(mx, y1, wz0), Iso(mx, y1, wz1));
+            }
+            g.DrawPolygon(frame, FaceY(y1, wx0, wx1, wz0, wz1));
+
+            // Côté route (+x) : porte encadrée de pierre, perron, et deux hautes fenêtres éclairées
+            Fill(g, stone, FaceX(x1, yMid - 0.2f, yMid + 0.2f, 0, h * 0.48f));
+            Fill(g, Color.FromArgb(90, 55, 40), FaceX(x1, yMid - 0.14f, yMid + 0.14f, 0, h * 0.42f));
+            foreach (float ya in new[] { y0 + 0.2f, y1 - 0.4f })
+                Fill(g, Color.FromArgb(250, 220, 150), FaceX(x1, ya, ya + 0.2f, h * 0.15f, h * 0.8f));
+            DrawBox(g, x1, yMid - 0.3f, 0.2f, 0.6f, 0, h * 0.06f, stone);
+
+            // Toit-terrasse et coupole de la salle de lecture
+            DrawBox(g, x0 - 0.03f, y0 - 0.03f, x1 - x0 + 0.06f, y1 - y0 + 0.06f, h, slab, stone);
+            DrawDome(g, Iso((x0 + x1) / 2, yMid, h + slab), _tileW * 0.45f, _tileW * 0.15f, _tileW * 0.3f, stone, Color.FromArgb(110, 120, 140));
+        }
+
+        /// <summary>Coupole sur tambour (dessinée face à l'écran) : éclairée à gauche, ombrée à droite, avec fenêtres et lanternon doré.</summary>
+        private void DrawDome(Graphics g, PointF c, float rx, float drumH, float domeH, Color drum, Color dome)
+        {
+            float ry = rx / 2;
+            var bottom = new RectangleF(c.X - rx, c.Y - ry, rx * 2, ry * 2);
+            g.FillPie(BrushOf(Shade(drum, 0.95f)), bottom, 90, 90);
+            g.FillPie(BrushOf(Shade(drum, 0.7f)), bottom, 0, 90);
+            g.FillRectangle(BrushOf(Shade(drum, 0.95f)), c.X - rx, c.Y - drumH, rx, drumH);
+            g.FillRectangle(BrushOf(Shade(drum, 0.7f)), c.X, c.Y - drumH, rx, drumH);
+            for (int k = -2; k <= 2; k++) // fenêtres du tambour
+            {
+                float wx = c.X + k * rx * 0.38f, ww = rx * 0.12f * (1 - Math.Abs(k) * 0.25f);
+                g.FillRectangle(BrushOf(Color.FromArgb(70, 80, 100)), wx - ww / 2, c.Y - drumH * 0.8f + ry * 0.2f, ww, drumH * 0.55f);
+            }
+            g.FillEllipse(BrushOf(Shade(drum, 1.05f)), c.X - rx, c.Y - drumH - ry, rx * 2, ry * 2);
+
+            var cap = new RectangleF(c.X - rx * 0.92f, c.Y - drumH - domeH, rx * 1.84f, domeH * 2);
+            g.FillPie(BrushOf(Shade(dome, 1.15f)), cap, 180, 90);
+            g.FillPie(BrushOf(Shade(dome, 0.75f)), cap, 270, 90);
+
+            // Lanternon
+            float lw = rx * 0.18f, lh = domeH * 0.35f, ly = c.Y - drumH - domeH;
+            var gold = Color.FromArgb(225, 185, 70);
+            g.FillRectangle(BrushOf(gold), c.X - lw / 2, ly - lh, lw, lh);
+            g.FillPie(BrushOf(Shade(gold, 1.1f)), c.X - lw * 0.7f, ly - lh - lw * 0.6f, lw * 1.4f, lw * 1.2f, 180, 180);
         }
 
         /// <summary>
