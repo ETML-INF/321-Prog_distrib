@@ -1,4 +1,4 @@
-namespace Front
+namespace Umdd
 {
     internal static class Program
     {

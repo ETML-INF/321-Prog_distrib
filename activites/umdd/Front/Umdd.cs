@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 
-namespace Front
+namespace Umdd
 {
     /// <summary>
     /// Maquette visuelle : "Un Monde De Douceurs", ville factice 40x40 en vue isométrique ("2D et demi"), rendue en GDI+.
