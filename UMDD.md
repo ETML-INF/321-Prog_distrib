@@ -5,7 +5,7 @@ Nous disposons d'un terrain sur lequel bâtir notre ville:
 
 ![](./supports/assets/before.png)
 
-Un entrepreneur a déjà passé par là, il a mis à notre disposition un réseau de communication.  
+Un entrepreneur est déjà passé par là, il a mis à notre disposition un réseau de communication TCP/IP.  
 Il vante le résultat de son travail de la manière suivante :
 
 - Le réseau est fiable
@@ -18,7 +18,7 @@ Il vante le résultat de son travail de la manière suivante :
 - Il est parfaitement homogène
 - À tout endroit du réseau, chacun connaît l'heure avec précision
 
-Un expert (M. Chad Gepeto) nous conseille de nous méfier de l'entrepreneur. Il nous recommande de nous organiser en coopérative et de construire ensemble une ville qui fonctionne sur ce réseau, mais sans croire aveuglement à ses affirmations. Il nous conseille de faire fonctionner notre ville sur une architecture microservices.
+Un expert (M. Chad Geppetto) nous conseille de nous méfier de l'entrepreneur. Il nous recommande de nous organiser en coopérative et de construire ensemble une ville qui fonctionne sur ce réseau, mais sans croire aveuglement à ses affirmations. Il nous conseille de faire fonctionner notre ville sur une architecture microservices.
 
 Il nous donne une liste de services qu'il estime nécessaire pour notre ville:
 
