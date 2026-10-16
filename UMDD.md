@@ -3,7 +3,7 @@
 Nous sommes un groupe d'artisans Boulanger-Pâtissier qui a décidé de bâtir Dousville, la ville de nos rêves, celle des meilleures Boulangeries-Pâtisseries (BP) de tout le cyberspace.  
 Nous disposons d'un terrain sur lequel bâtir notre ville:
 
-(vue du terrain vide)
+![](./supports/assets/before.png)
 
 Un entrepreneur a déjà passé par là, il a mis à notre disposition un réseau de communication.  
 Il vante le résultat de son travail de la manière suivante :
@@ -30,7 +30,7 @@ Il nous donne une liste de services qu'il estime nécessaire pour notre ville:
 
 Le résultat que nous visons ressemble à ceci:
 
-(vue du terrain full)
+![](./supports/assets/after.png)
 
 # La route vers Dousville
 
