@@ -1,27 +1,59 @@
 # Fil rouge "UMDD (Un Monde De Douceurs)"
 
-Dousville est la ville du Cyberspace qui compte le plus de Boulangeries-pâtisseries (BP).
+Nous sommes un groupe d'artisans Boulanger-Pâtissier qui a décidé de bâtir Dousville, la ville de nos rêves, celle des meilleures Boulangeries-Pâtisseries (BP) de tout le cyberspace.  
+Nous disposons d'un terrain sur lequel bâtir notre ville:
 
-Chacune d'entre elle produit une spécialité qu'elle vend fièrement.
-Mais les artisans de Dousville sont conscients que l'union fait la force et que la réputation de leur localité est importante pour leur prospérité individuelle.
-Plutôt que de se disputer le titre de meilleur boulangerie-pâtisserie, ils s'associent en coopérative et chacun vend également à ses clients les spécialités des autres boulangeries pâtisserie.
+(vue du terrain vide)
 
-Tout ceci repose sur une architecture microservices:
+Un entrepreneur a déjà passé par là, il a mis à notre disposition un réseau de communication.  
+Il vante le résultat de son travail de la manière suivante :
 
-- Log
-- Registre du commerce
-- Banque
-- Dépôt de la coopérative
-- Chat
+- Le réseau est fiable
+- Il n'y a aucune latence sur le réseau
+- Il offre une banque passante infinie
+- Il est sûr
+- Sa topologie est si bonne qu'elle n'aura jamais à changer
+- Il n'a besoin que d'un seul administrateur (moi)
+- Le coût des communications est nul
+- Il est parfaitement homogène
+- À tout endroit du réseau, chacun connaît l'heure avec précision
+
+Un expert nous conseille de nous méfier de l'entrepreneur. Il nous recommande de nous organiser en coopérative et de construire ensemble une ville qui fonctionne sur ce réseau, mais sans croire aveuglement à ses affirmations. Il nous conseille de faire fonctionner notre ville sur une architecture microservices.
+
+Il nous donne une liste de services qu'il estime nécessaire pour notre ville:
+
+- TimeService
+- LogService
+- TradeService (Registre du commerce)
+- MoneyService (Banque)
+- StoreService (Dépôt de la coopérative)
+
+Le résultat que nous visons ressemble à ceci:
+
+(vue du terrain full)
+
+# La route vers Dousville
 
 ## Thématique "Je suis sensé savoir..."
 
-Objet / Classe / Static
-Listes d'objets, retrouver un objet (Contains)
-Constructeur (avec surcharge)
-Propriétés
+Avant de se lancer dans l'aventure, assurons-nous que nos bases sont solides.
+
+- Objet / Classe / Static
+- Listes d'objets, retrouver un objet (Contains)
+- Constructeur (avec surcharge)
+- Propriétés
+
+### Activités
+
+(TBD)
 
 ## Thématique (Dé)Sérialisation
+
+Pour bien travailler ensemble, il va y avoir un certain nombre de classes qui sont partagées par tout le monde. Cela nous permettra d'échanger des objets entre deux programmes distants.
+
+Pour cela, nous utiliserons la sérialisation.
+
+### Activité
 
 Chacun crée un commerce: nom, enseigne (image), spécialité (nom + image + prix)Mise à disposition d'une base de code : une solution Windows Forms qui contient:
 
@@ -34,8 +66,6 @@ Chacun crée un commerce: nom, enseigne (image), spécialité (nom + image + pri
   - une méthode qui permet d'envoyer des messages sur un topic
   - une méthode appelée de manière asynchrone à la réception de message, cette méthode reçoit le topic complet en paramètres
 
-### Activité
-
 Afficher sa vitrine à partir de l'objet hardcodé
 Serialiser sa BP, la recharger à partir du du fichier et se débarrasser des valeurs hardcodées
 Récupérer les BP des autres, afficher plusieurs BP dans le Billboard
@@ -44,13 +74,26 @@ DoD:
 
 - Chacun affiche sa vitrine et au moins deux autres BP
 
-## Thématique Microservice: Logging
+## Thématique protocole
 
-Chaque BP décide, quels sont les évènements qu'elle veut inscrire dans son journal (log).
-Ces évènements sont inscrits dans un service comment à tous :
-Broker `mqtt.blue.section-inf.ch`, topic `/logs/\<BPname>`
+Maintenant que nous sommes capables de sérialiser et désérialiser des objets, nous allons pouvoir nous les transmettre d'un nœud à l'autre.  
+Le réseau que nous avons à notre disposition est certes fonctionnel, mais n'est pas très pratique pour s'envoyer et recevoir des objets sérialisés.
+
+Nous allons maintenant choisir un protocole de niveau intermédiaire qui nous permettra de transporter nos objets d'un point à un autre.
 
 ### Activité
+
+Sélection du protocole en commun orienter/limiter les choix vers MQTT / REST / RPC
+
+## Thématique Microservice: Logging
+
+Nous allons mettre en place un premier microservice qui ne fonctionne qu'en écriture: le `LogService`, qui reçoit tout message jugé utile par n'importe quel BP.
+
+### Activité
+
+Chaque BP décide, quels sont les évènements qu'elle veut inscrire dans son journal (log).
+Ces évènements sont inscrits dans un service commun à tous :
+Broker `mqtt.blue.section-inf.ch`, topic `/logs/\<BPname>`
 
 Chacun réalisation de son client `logger`: une application en mode console:
 
@@ -71,7 +114,18 @@ DoD:
 - Je tue ma BP depuis le Task Manager, je peut voir "... died!" dans le log de ma BP
 - Je peux montrer le log de toutes les BP simultanément
 
+## Thématique Microservice : Time
+
+À terme, chaque BP va publier ses horaires d'ouverture. Pour que le commerce fonctionne de manière harmonieuse à Dousville, il est donc nécessaire que tout le monde soit à la même heure.  
+Nous allons maintenant mettre en place un microservice qui ne fonctionne qu'en lecture : `TimeService` qui diffuse en permanence leur actuelle à Dousville.
+
+### Activité
+
+Écrire notre TimeService, qui va lui-même se connecter sur un serveur NTP et qui diffuse l'heure actuelle (éventuellement corrigée) sur notre réseau
+
 ## Thématique Microservice: Annuaire
+
+Nous allons maintenant mettre en place le microservice qui va nous permettre à chaque BP d'avoir connaissance de son environnement afin d'interagir avec lui.
 
 Le service d'annuaire (SA) est responsable de maintenir à jour et publier une liste des BP ouvertes.
 topic: `/directory`
@@ -110,9 +164,9 @@ DoD:
 
 (trois microservices réalisés en groupe et en parallèle)
 
-## Thématique Microservice: Chat
+## Thématique P2P: Chat
 
-Ce micro Service est mis à disposition de toutes les BP pour des échanges de messages informels entre elles.Le groupe qui le développe est responsable de fournir les informations nécessaires à l'utilisation du Service à l'ensemble de la classe.Au minimum:
+Ce microservice est mis à disposition de toutes les BP pour des échanges de messages informels entre elles.Le groupe qui le développe est responsable de fournir les informations nécessaires à l'utilisation du Service à l'ensemble de la classe.Au minimum:
 
 - un topic permettant de séparer le trafic de type `chat` du reste sur le broker
 - un mécanisme d'envoi de message personnel
@@ -127,7 +181,7 @@ DoD:
 
 ## Thématique Microservice: Coopérative
 
-Ce micro Service représente l'entrepôt dans lequel sont stockés les spécialités produites par chacune des BP.Avec lui, chaque BP peut:
+Ce microservice représente l'entrepôt dans lequel sont stockés les spécialités produites par chacune des BP.Avec lui, chaque BP peut:
 
 - livrer des spécialités produites sous forme d'une liste d'objets `Specialty`
 - demander l'inventaire complet actuel
