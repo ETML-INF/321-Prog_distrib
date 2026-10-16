@@ -12,13 +12,13 @@ Il vante le résultat de son travail de la manière suivante :
 - Il n'y a aucune latence sur le réseau
 - Il offre une banque passante infinie
 - Il est sûr
-- Sa topologie est si bonne qu'elle n'aura jamais à changer
+- Sa topologie est si bonne qu'il n'y aura jamais besoin de changer quoique ce soit
 - Il n'a besoin que d'un seul administrateur (moi)
 - Le coût des communications est nul
 - Il est parfaitement homogène
 - À tout endroit du réseau, chacun connaît l'heure avec précision
 
-Un expert nous conseille de nous méfier de l'entrepreneur. Il nous recommande de nous organiser en coopérative et de construire ensemble une ville qui fonctionne sur ce réseau, mais sans croire aveuglement à ses affirmations. Il nous conseille de faire fonctionner notre ville sur une architecture microservices.
+Un expert (M. Chad Gepeto) nous conseille de nous méfier de l'entrepreneur. Il nous recommande de nous organiser en coopérative et de construire ensemble une ville qui fonctionne sur ce réseau, mais sans croire aveuglement à ses affirmations. Il nous conseille de faire fonctionner notre ville sur une architecture microservices.
 
 Il nous donne une liste de services qu'il estime nécessaire pour notre ville:
 
