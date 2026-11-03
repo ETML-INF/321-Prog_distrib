@@ -6,7 +6,7 @@ Une thématique = un sujet de théorie et tout ce qui permet de l'éprouver. L'*
 
 ## Ce que contient chaque thématique
 
-1. **Théorie** : les [supports](../supports) correspondants.
+1. **Théorie** : les [supports](../supports/README.md) correspondants.
 2. **[Drill](../activites/drills/README.md)** : un mécanisme éprouvé à la main, avec le résultat attendu à chaque étape (≈ 20 min, sans IA).
 3. **[Chat](../activites/chat/README.md)** : une amélioration guidée de **son** chat, dans **le langage de son choix**, vérifiable avec le [labo](../activites/infra/README.md).
 4. **[Fil rouge](../activites/fil-rouge/README.md)** : le même mécanisme dans un décor choisi (UMDD, Powercher, Pedaloland), moins guidé, avec des indices.
@@ -31,7 +31,7 @@ L'IA est permise à condition de **comprendre** : voir l'[évaluation](../evalua
 
 ## Les 8 fallacies, fil rouge du module
 
-[Les 8 fallacies](../supports/fallacies.md) sont la grille de lecture de **toutes** les thématiques : chaque affirmation de l'entrepreneur de Dousville en est une. Lisez chaque énoncé en demandant « de quelle croyance dépend-il ? ».
+[Les 8 fallacies](../supports/README.md) sont la grille de lecture de **toutes** les thématiques : chaque affirmation de l'entrepreneur de Dousville en est une. Lisez chaque énoncé en demandant « de quelle croyance dépend-il ? ».
 
 ## Outils transversaux
 

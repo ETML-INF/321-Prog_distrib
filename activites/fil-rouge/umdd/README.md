@@ -25,7 +25,7 @@ Chacune de ses affirmations est l'une des [fallacies](../../../supports/fallacie
 - **Filet de sécurité.** Pour chaque service partagé le prof fournit un *service de référence* : si un groupe n'a pas livré, la classe n'est pas bloquée. Un service de référence peut être « tué » par l'enseignant pour un exercice de résilience.
 - **Réutilisez votre [chat](../../chat/README.md)** : la plomberie (connexion, enveloppe, validation, reconnexion) est la même.
 - **Le [labo Docker](../../infra/README.md)** est votre terrain de test : cassez votre ville avant que la classe ne le fasse.
-- Le `Front` C# ([activites/umdd](../../umdd)) est une vitrine **optionnelle**.
+- Le `Front` C# ([activites/umdd](../../umdd/README.md)) est une vitrine **optionnelle**.
 
 ## Les étapes de la ville
 

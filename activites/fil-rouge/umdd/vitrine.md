@@ -26,7 +26,7 @@ Avant de bâtir la ville, chacun ouvre sa boulangerie-pâtisserie (BP) et on se 
 
 - Pourquoi `retain` ici ? (voir [D03](../../drills/D03-qos-retain.md)). Que se passe-t-il quand une BP ferme ? Vous le réglerez avec l'[annuaire](log-annuaire.md).
 - Mesurez la taille d'une vitrine avec image. Redimensionnez l'image à ≤ 20 Ko avant de l'encoder (fallacy 3).
-- Si vous utilisez le `Front` C# ([activites/umdd](../../umdd)) : il fournit un `Business`, une `Specialty`, un `Store` et un `Billboard`, mais **pas** votre contrat. À vous de l'adapter.
+- Si vous utilisez le `Front` C# ([activites/umdd](../../umdd/README.md)) : il fournit un `Business`, une `Specialty`, un `Store` et un `Billboard`, mais **pas** votre contrat. À vous de l'adapter.
 - Une image en base64 dans un JSON : c'est le plus simple, est-ce le plus sobre ? Notez un avantage et un inconvénient.
 
 ## Pannes à provoquer (labo)

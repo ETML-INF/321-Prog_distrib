@@ -8,4 +8,4 @@ Les détails sont décrits de manière formelle sur [le site ICT](https://www.mo
 De manière simplifiée, ce module a pour but de vous montrer certaines techniques, pratiques et technologies qui permettent de répartir des fonctionnalités et/ou de la charge de travail sur plusieurs ordinateurs.
 
 Le parcours emprunté par ce module est disponible [ici](https://roadmap.sh/r/embed?id=66ea73d4f34c8868ec042b2c)
-[thematiques](thematiques)
+[thematiques](thematiques/README.md)

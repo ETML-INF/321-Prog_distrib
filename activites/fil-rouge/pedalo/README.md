@@ -1,6 +1,6 @@
 # Fil rouge « Pedaloland » (esquisse)
 
-L'industrie du pédalo est en plein boom (ou pas…). Chacun développe son usine à pédalo ; la ville est faite de services partagés. Descriptif complet : [Pedaloland.md](../../../Pedaloland.md). Projet C# existant : [activites/Pedaloland](../../Pedaloland).
+L'industrie du pédalo est en plein boom (ou pas…). Chacun développe son usine à pédalo ; la ville est faite de services partagés. Descriptif complet : [Pedaloland.md](../../../Pedaloland.md). Projet C# existant : [activites/Pedaloland](../../Pedaloland/README.md).
 
 C'est un **cousin d'UMDD** : même structure de services, autre décor. À réserver à un autre groupe ; cette page ne fait que **mapper** les thématiques.
 

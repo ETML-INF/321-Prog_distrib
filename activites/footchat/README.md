@@ -21,7 +21,7 @@ Les valeurs acceptables pour les deux premiers niveaux sont :
 
 ## Mission
 
-1. Installer MQTTX à partir du [inf-toolset](github.com/ETML-INF/standard-toolset)
+1. Installer MQTTX à partir du [inf-toolset](https://github.com/ETML-INF/standard-toolset)
    - Vérifier si le toolset est installé : c:\inf-toolset
    - [L'activer](https://github.com/ETML-INF/standard-toolset#activation) si cela n'a pas été fait
    - L'installer le cas échéant
