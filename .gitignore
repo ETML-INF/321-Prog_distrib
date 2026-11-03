@@ -3,6 +3,8 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 .idea/
+# Documents de conception (spécifications et plans de travail), hors du contenu du cours
+docs/
 .vitepress/cache
 .vitepress/dist
 # User-specific files

@@ -7,6 +7,7 @@ La ville fonctionne. On la confronte à un **scénario réel**, choisi par vote.
 | Prérequis | tous les services de la ville                                               |
 | Fallacy   | à identifier par l'équipe (c'est le premier livrable) |
 | Contrat   | à amender selon le défi                               |
+| Exigence | [contrat de scénario](../README.md#contrat-de-scenario) : toutes |
 
 ## 1. Le vote
 
@@ -34,4 +35,4 @@ Implémentez le défi sur la ville. Le prof circule en **provocateur** : il cass
 
 ## 4. Et après ?
 
-La ville et ce défi servent de terrain à l'[évaluation](../../../evaluation/umdd-v2.md) : une fonctionnalité sur la ville (piste *feature*) ou un code défectueux à réparer (piste *code*).
+La ville et ce défi servent de terrain à l'[évaluation](../../../evaluation/grille.md) : une fonctionnalité sur la ville (piste *feature*) ou un code défectueux à réparer (piste *code*).

@@ -58,16 +58,16 @@ PUT  /api/items/123        {"name":"item1","value":100}   →  crée ou remplace
 
 Utilisez **POST** quand le serveur doit contrôler l'identifiant, **PUT** quand le client contrôle la ressource visée.
 
-## Exemple : Powercher
+## Exemple : une enveloppe de message
 
-Les messages d'environnement de la ville (date, nuages, énergie solaire, vent) peuvent être retransmis. Le choix de Powercher : les messages sont emballés dans une **enveloppe** qui sépare la partie « technique » de la partie métier, avec un identifiant unique, l'émetteur, le destinataire, le type de message et le contenu. Un consommateur mémorise les identifiants déjà traités.
+Les messages d'environnement de la ville (date, nuages, énergie solaire, vent) peuvent être retransmis. Un choix possible : les messages sont emballés dans une **enveloppe** qui sépare la partie « technique » de la partie métier, avec un identifiant unique, l'émetteur, le destinataire, le type de message et le contenu. Un consommateur mémorise les identifiants déjà traités.
 
 <details>
 <summary>Quel est le piège de « un UUID est généré à chaque envoi » ?</summary>
 Si l'enveloppe est reconstruite à chaque tentative de retransmission, chaque essai porte un nouvel identifiant et la déduplication ne reconnaît rien. L'identifiant doit être fixé à la création du message, pas à son envoi.
 </details>
 
-L'enveloppe de Dousville (`id`, `from`, `to`, `ts`, `type`) suit la même idée : voir le [contrat](../activites/contrats/README.md).
+L'enveloppe du contrat de base (`id`, `from`, `to`, `ts`, `type`) suit la même idée : voir le [contrat](../activites/contrats/README.md).
 
 ## Conclusion
 

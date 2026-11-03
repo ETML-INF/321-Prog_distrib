@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dousville/presence",
-  "title": "Payload presence (retenu sur dousville/presence/<bp>)",
+  "$id": "contrat/presence",
+  "title": "Payload presence (retenu sur {racine}/presence/<nœud>)",
   "type": "object",
   "required": ["state"],
   "additionalProperties": false,

@@ -6,7 +6,7 @@ C'est un **cousin d'UMDD** : même structure de services, autre décor. À rése
 
 | Thématique | UMDD | Pedaloland | Notes |
 |---|---|---|---|
-| Sérialisation | Vitrine (`business`) | `Brand` + `Model` (nom, enseigne, modèle de pédalo) | [schéma business](../../contrats/business.schema.json) à adapter |
+| Sérialisation | Vitrine (`business`) | `Brand` + `Model` (nom, enseigne, modèle de pédalo) | [schéma business](../umdd/business.schema.json) à adapter |
 | Temps, MQTT | TimeService | horloge commune des usines | idem |
 | Microservices | Log + Annuaire | Log + Registre du commerce | idem |
 | Idempotence, Transactions | Banque + Coop | Banque + **producteurs de matière première** (fibre de verre, métal, toile) | l'usine achète les composants : transaction à plusieurs fournisseurs |
@@ -14,6 +14,24 @@ C'est un **cousin d'UMDD** : même structure de services, autre décor. À rése
 | Sécurité | Sécurité | achats signés, commandes confidentielles | idem |
 | Supervision, Énergie | Supervision | surveillance des usines et des producteurs | |
 | Défi | Défi | à définir | |
+
+## Couverture des exigences
+
+Exigences génériques : [contrat de scénario](../README.md#contrat-de-scenario). Services possibles : [catalogue](../services.md).
+
+| Thématique | Couvert par | Manque |
+|---|---|---|
+| Sérialisation | `Brand` + `Model` | schéma à écrire |
+| Temps | horloge commune des usines | à écrire |
+| MQTT | flux d'état des usines (retenu), événements de commande | à écrire |
+| Microservices | journal + registre du commerce | à écrire |
+| Idempotence | paiement vers les producteurs | à écrire |
+| Transactions | commande multi-fournisseurs (fibre de verre, métal, toile) | à écrire |
+| Résilience | un fournisseur qui tombe | à écrire |
+| Cluster et P2P | registre du commerce en cluster | à écrire |
+| Sécurité | achats signés, commandes confidentielles | à écrire |
+| Supervision | surveillance des usines et fournisseurs | à écrire |
+| Énergie | consommation d'une usine | à définir |
 
 ## À ajouter pour que ce scénario devienne utilisable
 

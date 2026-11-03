@@ -8,7 +8,12 @@ Comment faire en sorte que les pannes soient une donnée contextuelle plutôt qu
 - expliquer le disjoncteur (circuit breaker)
 - décrire un arrêt propre (graceful shutdown)
 
-**Fallacies :** 1 (fiabilité), 2 (latence). Voir [les 8 fallacies](../supports/fallacies.md).
+**Fallacies :**
+
+- [1 — Le réseau est fiable](../supports/fallacies.md#fallacy-1)
+- [2 — La latence est nulle](../supports/fallacies.md#fallacy-2)
+
+Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [Design for failure](../supports/design4failure.md)
@@ -20,6 +25,15 @@ Comment faire en sorte que les pannes soient une donnée contextuelle plutôt qu
 ## Chat
 - [C6 — Survivre à la coupure du broker](../activites/chat/C6-reconnexion.md)
 
+## Exigences du fil rouge
+
+Quel que soit le scénario choisi, il doit, pour cette thématique :
+
+- **Services attendus :** [Stockage d’état](../activites/fil-rouge/services.md#cat-stockage), [Simulateur d’événements](../activites/fil-rouge/services.md#cat-simulateur)
+- **Doit introduire :** une dépendance qui peut tomber (un autre service, le broker)
+- **Preuve attendue :** sous panne provoquée avec le proxy, le nœud réessaie avec un backoff, ne sature pas la ressource et reprend seul au retour de la dépendance
+- **Décision à documenter :** les timeouts, le nombre d'essais et le plafond du backoff
+
 ## Fil rouge
 
 | Fil rouge  | Activité                                                           |
@@ -27,3 +41,4 @@ Comment faire en sorte que les pannes soient une donnée contextuelle plutôt qu
 | UMDD       | [Annuaire en cluster](../activites/fil-rouge/umdd/cluster.md)      |
 | Powercher  | [Powercher](../activites/fil-rouge/powercher/README.md#resilience) |
 | Pedaloland | [Mapping](../activites/fil-rouge/pedalo/README.md)                 |
+| Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) |

@@ -7,6 +7,7 @@
 | Prérequis | [D02](../../drills/D02-temps.md) · [D03](../../drills/D03-qos-retain.md) · [C2](../../chat/C2-ordre.md) · [C3](../../chat/C3-presence.md) |
 | Fallacy | « tout le monde connaît l'heure », 2 (latence), 7 (coût) |
 | Contrat | [time](../../contrats/time.schema.json), topic `dousville/time` |
+| Exigence | [Temps](../../../thematiques/02-temps.md#exigences-du-fil-rouge) · [MQTT](../../../thematiques/03-mqtt.md#exigences-du-fil-rouge) |
 
 ## Mission
 

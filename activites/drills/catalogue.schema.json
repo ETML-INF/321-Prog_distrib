@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dousville/business",
-  "title": "Payload business (boulangerie-pâtisserie)",
+  "$id": "drill/catalogue",
+  "title": "Payload catalogue (exemple du drill D01)",
   "type": "object",
   "required": ["name", "specialties"],
   "additionalProperties": false,

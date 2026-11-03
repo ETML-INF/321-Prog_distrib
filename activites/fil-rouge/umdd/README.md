@@ -6,6 +6,16 @@ Chacune de ses affirmations est l'une des [fallacies](../../../supports/fallacie
 
 ![après](../../../supports/assets/after.png)
 
+## Identité du scénario
+
+| | |
+|---|---|
+| Racine de topics | `dousville/` (`dousville/presence/<bp>`, `dousville/time`, `dousville/log/<bp>`, `dousville/vitrine/<bp>`) |
+| Vocabulaire | un nœud est une **BP** (boulangerie-pâtisserie) |
+| Types de messages ajoutés | `business` ([schéma](business.schema.json)) |
+| Contrat | le [contrat de base](../../contrats/README.md) partagé, plus l'extension ci-dessus |
+| Catalogue | [services](../services.md) : source de temps, annuaire, journal, paiement, échange, vitrine, supervision, défi |
+
 ## Services de la ville
 
 | Service | Thématique | Qui |
@@ -39,5 +49,23 @@ Chacune de ses affirmations est l'une des [fallacies](../../../supports/fallacie
 | [Sécurité](securite.md) | Sécurité |
 | [Supervision](supervision.md) | Supervision, Énergie |
 | [Défi voté](defi.md) | toutes |
+
+## Couverture des exigences
+
+Exigences génériques : [contrat de scénario](../README.md#contrat-de-scenario). UMDD est la référence : c'est de ses DoD que les exigences sont dérivées. Les « manques » sont les points où une page UMDD est en deçà de l'exigence générique.
+
+| Thématique | Page | Couvert par | Manque |
+|---|---|---|---|
+| Sérialisation | [Vitrine](vitrine.md) | `business` + schéma partagé, vitrine hostile | les trois entrées hostiles ne sont pas listées dans la DoD |
+| Temps | [TimeService](time.md) | `dousville/time`, `--clock-skew 30`, mode dégradé | |
+| MQTT | [TimeService](time.md), [Vitrine](vitrine.md) | vitrines retenues, arrivée tardive | choix du QoS par flux à demander explicitement |
+| Microservices | [Log et annuaire](log-annuaire.md) | LWT, annuaire des BP ouvertes | délai de retrait (10 s) à chiffrer dans la DoD |
+| Idempotence | [Banque et coopérative](banque-coop.md) | banque, doublons | borne de la mémoire de déduplication à exiger |
+| Transactions | [Banque et coopérative](banque-coop.md) | Fair Trade, panne de la banque | |
+| Résilience | [Annuaire en cluster](cluster.md) | retry + backoff + jitter, proxy | |
+| Cluster et P2P | [Annuaire en cluster](cluster.md) | quatre instances, perte de trois | |
+| Sécurité | [Sécurité](securite.md) | usurpation, rejeu, observateur | |
+| Supervision | [Supervision](supervision.md) | moniteur, alertes, clôture | |
+| Énergie | [Supervision](supervision.md) | trafic de supervision pour 30 BP | bilan puissance × durée absent : voir le [bilan Powercher](../powercher/README.md#supervision-energie) |
 
 L'ordre dans lequel ces étapes sont abordées est une suggestion du [planning](../../../planning/README.md).

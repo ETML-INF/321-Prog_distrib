@@ -39,7 +39,7 @@ Deux modes :
    - **Random** : au hasard.
 2. **Distribué.** Les tâches sont présentées à tous les nœuds, chacun « pioche ». Chaque nœud choisit selon un calcul sur les attributs de la tâche, défini pour qu'aucune tâche ne reste sur le carreau (**Hash-based**).
 
-Avec MQTT 5, les [abonnements partagés](mqtt.md#abonnements-partagés-mqtt-50) donnent une répartition en round robin sans master.
+Avec MQTT 5, les [abonnements partagés](mqtt.md#abonnements-partages-mqtt-5-0) donnent une répartition en round robin sans master.
 
 ## 4. Failover
 

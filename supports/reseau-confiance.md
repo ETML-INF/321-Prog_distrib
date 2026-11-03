@@ -31,7 +31,7 @@ Même si l'identité d'un nœud est vérifiée cryptographiquement, le réseau d
 ## Exemple d'application avec PKI (Public Key Infrastructure)
 
 1. **Établissement de la confiance.** Chaque maison s'enregistre auprès d'une autorité de certification (CA) et obtient un certificat X.509 contenant sa clé publique. Les autres maisons valident ce certificat avant d'échanger.
-2. **Signature des messages MQTT.** Les messages publiés via le broker sont **signés** avec la clé privée de l'émetteur (exemple : un message sur le topic `powercher`, accompagné de la signature de son contenu).
+2. **Signature des messages MQTT.** Les messages publiés via le broker sont **signés** avec la clé privée de l'émetteur (exemple : un message sur un topic du scénario, accompagné de la signature de son contenu).
 3. **Vérification.** Les abonnés utilisent la clé publique de l'émetteur (dans son certificat) pour s'assurer que le message **provient bien de l'émetteur déclaré** et que les **données n'ont pas été modifiées**.
 4. **Fichiers volumineux.** On hache le fichier (par exemple SHA-256) avant transmission et on signe le hash.
 

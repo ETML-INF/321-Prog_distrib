@@ -1,17 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dousville/envelope",
-  "title": "Enveloppe Dousville",
+  "$id": "contrat/envelope",
+  "title": "Enveloppe",
   "type": "object",
   "required": ["v", "id", "from", "to", "ts", "type", "payload"],
   "additionalProperties": false,
   "properties": {
     "v": { "const": 1 },
     "id": { "type": "string", "format": "uuid" },
-    "from": { "type": "string", "minLength": 1 },
-    "to": { "type": "string", "minLength": 1, "description": "nom d'une BP, ou * pour tout le monde" },
+    "from": { "type": "string", "minLength": 1, "description": "nom du nœud émetteur" },
+    "to": { "type": "string", "minLength": 1, "description": "nom d'un nœud, ou * pour tous" },
     "ts": { "type": "string", "format": "date-time", "description": "UTC, ISO 8601" },
-    "type": { "type": "string", "enum": ["chat", "business", "presence", "time", "log"] },
+    "type": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "nom du schéma du payload ; le noyau définit chat, presence, time, log, un scénario peut en ajouter" },
     "payload": { "type": "object" }
   }
 }

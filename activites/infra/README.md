@@ -1,4 +1,4 @@
-# Laboratoire Dousville (Docker)
+# Laboratoire (Docker)
 
 Un hôte, un broker MQTT, un réseau que **vous** pouvez dégrader. Sert aux [drills](../drills/README.md), au [chat](../chat/README.md) et au [fil rouge](../fil-rouge/README.md).
 
@@ -17,7 +17,7 @@ docker compose down           # tout arrêter (-v pour effacer l'état du broker
 | `1884`    | broker, accès **via le proxy** (Toxiproxy) | réseau que l'on peut dégrader |
 | `8474`    | API Toxiproxy                              | scripts de panne              |
 
-Variante RabbitMQ (comme Powercher) : `docker compose --profile rabbitmq up -d`. MQTT sur le port `1885`, utilisateur `ict`, mot de passe `321`. Même contrat, autre broker : bon test d'hétérogénéité.
+Variante RabbitMQ : `docker compose --profile rabbitmq up -d`. MQTT sur le port `1885`, utilisateur `ict`, mot de passe `321`. Même contrat, autre broker : bon test d'hétérogénéité.
 
 ## Outils : aucun à installer
 
@@ -25,13 +25,13 @@ Les clients `mosquitto_pub` / `mosquitto_sub` sont dans le conteneur du broker. 
 
 ```bash
 # observateur : tout ce qui passe
-docker compose exec broker mosquitto_sub -t 'dousville/#' -v
+docker compose exec broker mosquitto_sub -t 'lab/#' -v
 
 # publier
-docker compose exec broker mosquitto_pub -t dousville/chat/all -m 'salut'
+docker compose exec broker mosquitto_pub -t lab/test -m 'salut'
 
 # passer par le proxy (depuis le conteneur : hôte "toxiproxy", port 1884)
-docker compose exec broker mosquitto_pub -h toxiproxy -p 1884 -t dousville/chat/all -m 'salut'
+docker compose exec broker mosquitto_pub -h toxiproxy -p 1884 -t lab/test -m 'salut'
 ```
 
 Options utiles : `-q 0|1|2` (QoS), `-r` (retain), `-i <id>` (identifiant client), `-c` (session persistante), `-k <s>` (keep-alive, minimum 5), `-W <s>` (abandonner après), `-C <n>` (s'arrêter après n messages), `--will-topic/--will-payload` (LWT).
@@ -70,3 +70,4 @@ Situations qui ne passent pas par le proxy :
 - `docker compose ps` vide : le démon Docker est-il démarré ?
 - Un message « retained » vous gêne : `docker compose exec broker mosquitto_pub -t <topic> -r -n` l'efface.
 - État du broker corrompu par vos tests : `docker compose down -v` puis `up -d`.
+- Port 1883 ou 1884 déjà pris : un ancien laboratoire (projet Compose d'un autre nom, le projet s'appelle maintenant `lab`) tourne encore. `docker compose ls` le montre, `docker compose -p <ancien-nom> down` l'arrête.

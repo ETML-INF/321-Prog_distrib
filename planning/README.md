@@ -32,7 +32,7 @@ flowchart LR
 ### Séquence 1
 | P   | Contenu                                                                                                                                                                                                                                                                             |
 |-----|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1   | Mise en route : présenter le parcours et l'[évaluation](../evaluation/umdd-v2.md), lire l'[histoire de départ](../UMDD.md) (quelle fallacy derrière chaque promesse ?), installer le [labo](../activites/infra/README.md), choisir le [fil rouge](../activites/fil-rouge/README.md) |
+| 1   | Mise en route : présenter le parcours et l'[évaluation](../evaluation/grille.md), lire l'[histoire de départ](../UMDD.md) (quelle fallacy derrière chaque promesse ?), installer le [labo](../activites/infra/README.md), choisir le [fil rouge](../activites/fil-rouge/README.md) |
 | 2   | Théorie sérialisation + D01                                                                                                                                                                                                                                                         |
 | 3–4 | C1                                                                                                                                                                                                                                                                                  |
 | 5   | Fil rouge : vitrine                                                                                                                                                                                                                                                                 |
@@ -88,7 +88,7 @@ flowchart LR
 
 ### Séquence 8 : évaluation
 
-La ville de la séquence 7 sert de terrain. Deux pistes, attribuées ou tirées par l'enseignant (voir [évaluation](../evaluation/umdd-v2.md)) :
+La ville de la séquence 7 sert de terrain. Deux pistes, attribuées ou tirées par l'enseignant (voir [évaluation](../evaluation/grille.md)) :
 
 | Piste       | L'élève reçoit                       | Il doit                                                                                                                                    |
 |-------------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
@@ -103,7 +103,7 @@ La ville de la séquence 7 sert de terrain. Deux pistes, attribuées ou tirées 
 |     |                                                                                 |
 
 **À préparer avant la séquence 8 :**
-- une banque d'énoncés et de codes défectueux couvrant les fallacies ([suggestions](../evaluation/umdd-v2.md#banque-dénoncés));
+- une banque d'énoncés et de codes défectueux couvrant les fallacies ([suggestions](../evaluation/grille.md#banque-d-enonces));
 - des codes défectueux dans plusieurs langages (l'élève choisit celui qu'il lit le mieux) ;
 - la ville de référence et le labo, prêts à être cassés.
 

@@ -20,6 +20,7 @@
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",
+    "docs:check": "node scripts/check-anchors.mjs && bash scripts/check-core-agnostic.sh",
     "slidev:lin": "BASE=$(node -p \"require('./package.json').siteBase\") && for f in slides/*.md; do slidev build \"${f}\" --out \"../.vitepress/dist/slides/$(basename \"${f}\" .md)\" --base \"${BASE}slides/$(basename \"${f}\" .md)/\" ; done",
     "slidev:win": "for /f \"delims=\" %B in ('node -p \"require('./package.json').siteBase\"') do @for %%F in (slides\\*.md) do slidev build \"%%F\" --out \"..\\.vitepress\\dist\\slides\\%%~nF\" --base \"%Bslides/%%~nF/\""
   },

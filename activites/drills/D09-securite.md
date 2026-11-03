@@ -13,7 +13,7 @@ Associer chaque attaque à la propriété violée et au mécanisme qui la protè
 
 ## 1. Quatre messages interceptés (papier)
 
-Sur le broker ouvert de la classe, un attaquant observe `dousville/bank`. Pour chaque cas, nommez la propriété violée parmi : **confidentialité**, **intégrité**, **authenticité** (qui est l'auteur), **fraîcheur** (le message est-il récent ?) ; puis le mécanisme qui protège.
+Sur le broker ouvert de la classe, un attaquant observe `lab/bank`. Pour chaque cas, nommez la propriété violée parmi : **confidentialité**, **intégrité**, **authenticité** (qui est l'auteur), **fraîcheur** (le message est-il récent ?) ; puis le mécanisme qui protège.
 
 | # | Ce qui s'est passé | Propriété violée | Mécanisme |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Complétez en vous aidant de la théorie :
 | | Clé partagée (symétrique) | Paire de clés (asymétrique) |
 |---|---|---|
 | Qui connaît le secret ? | ? | ? |
-| Peut-on prouver l'auteur parmi 30 boulangeries ? | ? | ? |
+| Peut-on prouver l'auteur parmi 30 nœuds ? | ? | ? |
 | Combien de clés pour 30 participants ? | ? | ? |
 
 → tous ceux qui partagent · non (n'importe qui du groupe a pu signer) · 30 paires, mais il faut savoir à qui appartient chaque clé publique (réseau de confiance, certificats).

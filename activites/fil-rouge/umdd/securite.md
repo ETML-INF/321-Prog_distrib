@@ -7,6 +7,7 @@ Jusqu'ici tout reposait sur la confiance : n'importe qui peut déposer une spéc
 | Prérequis | [D09](../../drills/D09-securite.md) · [C7](../../chat/C7-confiance.md) |
 | Fallacy | 4 (réseau sûr), 6 (plusieurs administrateurs) |
 | Contrat | amendement `v: 2` de l'enveloppe (décidé en C7), éventuellement par service |
+| Exigence | [Sécurité](../../../thematiques/09-securite.md#exigences-du-fil-rouge) |
 
 ## Mission
 

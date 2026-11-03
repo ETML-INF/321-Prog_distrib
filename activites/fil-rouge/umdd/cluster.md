@@ -7,6 +7,7 @@ L'annuaire est **sans état** : c'est le candidat idéal pour tourner en plusieu
 | Prérequis | [D07](../../drills/D07-retry.md) · [D08](../../drills/D08-cluster.md) · [C6](../../chat/C6-reconnexion.md) |
 | Fallacy | 5 (topologie), 6 (un seul administrateur), 1 (fiabilité) |
 | Contrat | celui de l'[annuaire](log-annuaire.md), éventuellement amendé |
+| Exigence | [Résilience](../../../thematiques/07-resilience.md#exigences-du-fil-rouge) · [Cluster et P2P](../../../thematiques/08-cluster-p2p.md#exigences-du-fil-rouge) |
 
 ## Mission
 

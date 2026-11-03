@@ -19,7 +19,7 @@ Mosquitto publie ses métriques sur le topic `$SYS/#`.
 
 1. T1 : `DC mosquitto_sub -t '$SYS/broker/clients/connected' -t '$SYS/broker/messages/received' -v -W 15`  
    → deux lignes immédiatement (valeurs retenues), par exemple `$SYS/broker/clients/connected 2`. Les chiffres varient.
-2. T2 : ouvrez 3 abonnés (`DC mosquitto_sub -t dousville/lab/z -W 60`) dans trois terminaux, relancez la commande 1.  
+2. T2 : ouvrez 3 abonnés (`DC mosquitto_sub -t lab/z -W 60`) dans trois terminaux, relancez la commande 1.  
    → `clients/connected` a augmenté d'autant. Le **nombre de clients** est un indicateur de santé.
 3. Tuez-en un brutalement ; combien de temps avant que le compteur ne baisse ? (comparez avec D04)  
    → instantané pour une fermeture franche, jusqu'à 1,5 × keep-alive pour une mort silencieuse.

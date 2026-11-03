@@ -10,7 +10,12 @@ Malgré les opportunités présentées dans l'image, nous nous limitons à 2 él
 - décider en équipe ce que l'on signe et comment les clés sont distribuées
 - expliquer ce que la signature seule ne protège pas
 
-**Fallacies :** 4 (le réseau est sûr), 6 (plusieurs administrateurs). Voir [les 8 fallacies](../supports/fallacies.md).
+**Fallacies :**
+
+- [4 — Le réseau est sûr](../supports/fallacies.md#fallacy-4)
+- [6 — Il n’y a qu’un administrateur](../supports/fallacies.md#fallacy-6)
+
+Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [Sécurité](../supports/securite.md) (vocabulaire)
@@ -24,6 +29,15 @@ Malgré les opportunités présentées dans l'image, nous nous limitons à 2 él
 ## Chat
 - [C7 — Prouver l'auteur, refuser le rejeu](../activites/chat/C7-confiance.md)
 
+## Exigences du fil rouge
+
+Quel que soit le scénario choisi, il doit, pour cette thématique :
+
+- **Services attendus :** [Identité et confiance](../activites/fil-rouge/services.md#cat-identite), [Passerelle / adaptateur](../activites/fil-rouge/services.md#cat-passerelle)
+- **Doit introduire :** un auteur dont il faut prouver l'identité et au moins une donnée à protéger
+- **Preuve attendue :** un message usurpé ou rejoué est refusé ; si la confidentialité est visée, un espion sur le bus ne voit que du chiffré
+- **Décision à documenter :** qui fait confiance à qui, et comment les clés sont distribuées
+
 ## Fil rouge
 
 | Fil rouge  | Activité                                                         |
@@ -31,5 +45,6 @@ Malgré les opportunités présentées dans l'image, nous nous limitons à 2 él
 | UMDD       | [Sécurité](../activites/fil-rouge/umdd/securite.md)              |
 | Powercher  | [Powercher](../activites/fil-rouge/powercher/README.md#securite) |
 | Pedaloland | [Mapping](../activites/fil-rouge/pedalo/README.md)               |
+| Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) |
 
-Activité historique : [Réseau de confiance (AES)](../activites/aie_confiance/README.md)
+Activité alternative : [Réseau de confiance (AES)](../activites/aie_confiance/README.md)

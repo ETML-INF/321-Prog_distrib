@@ -1,4 +1,4 @@
-# Évaluation — parcours UMDD v2
+# Évaluation — grille du parcours
 
 L'IA est permise **pendant le parcours** (labo, chat), pas pendant l'évaluation : on mesure la compréhension, pas la production.
 
@@ -56,3 +56,12 @@ Chaque tâche est étiquetée avec une ou deux bandes de la [matrice](matrice%20
 | 7 coût                      | « Le capteur doit tenir 3 mois sur batterie »                                    | publication toutes les secondes sans nécessité                                |
 | 8 homogène                  | « Un client Python doit lire les messages d'un service Java »                    | sérialisation dépendante du langage ou de la machine                          |
 | heure                       | « Les messages doivent s'afficher dans l'ordre de la conversation »              | tri par `ts` local sans correction                                            |
+
+## Annexes par fil rouge
+
+La grille est la même pour tous les fils rouges. Chaque fil rouge ajoute une annexe : le terrain utilisé pour la séquence finale et les adaptations de la banque d'énoncés.
+
+- [UMDD](annexes/umdd.md)
+- [Powercher](annexes/powercher.md)
+- [Pedaloland](annexes/pedaloland.md)
+- [Gabarit pour un nouveau fil rouge (dont le libre)](annexes/modele.md)

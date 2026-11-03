@@ -46,7 +46,7 @@ Alice dépose **10 croissants** à la **Coopérative** (service A). La Coopérat
 
 5. **Proposez un protocole.** Utilisez : un identifiant de transaction `t1`, l'idempotence de la Banque (D05), un état de la transaction (`en cours`, `payée`, `annulée`). Dessinez le diagramme de séquence **nominal**, puis le cas « la banque plante avant de répondre ».
 
-6. **Compensation.** Si la Banque répond « fonds insuffisants » (c'était le cas du sujet *Fair Trade* de UMDD), quelle action rétablit la cohérence ? Dans quel ordre ?
+6. **Compensation.** Si la Banque répond « fonds insuffisants » (un échange entre deux services, par exemple), quelle action rétablit la cohérence ? Dans quel ordre ?
 
 ## Débrief
 

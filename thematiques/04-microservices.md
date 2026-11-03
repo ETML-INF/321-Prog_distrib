@@ -10,7 +10,13 @@ Découper en services qui se parlent par messages, chacun avec son équipe et so
 - co-écrire un contrat de service avec d'autres équipes
 - implémenter un service d'annuaire et un service de journal
 
-**Fallacies :** 1 (fiabilité), 5 (topologie), 6 (un seul administrateur). Voir [les 8 fallacies](../supports/fallacies.md).
+**Fallacies :**
+
+- [1 — Le réseau est fiable](../supports/fallacies.md#fallacy-1)
+- [5 — La topologie ne change pas](../supports/fallacies.md#fallacy-5)
+- [6 — Il n’y a qu’un administrateur](../supports/fallacies.md#fallacy-6)
+
+Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [Microservices](../supports/microservice.md)
@@ -23,6 +29,15 @@ Découper en services qui se parlent par messages, chacun avec son équipe et so
 ## Chat
 - [C4 — Annoncer sa propre mort](../activites/chat/C4-mort.md)
 
+## Exigences du fil rouge
+
+Quel que soit le scénario choisi, il doit, pour cette thématique :
+
+- **Services attendus :** [Annuaire](../activites/fil-rouge/services.md#cat-annuaire), [Journal](../activites/fil-rouge/services.md#cat-journal)
+- **Doit introduire :** au moins deux services indépendants qui se découvrent via le bus, et un nœud qui annonce sa propre mort (LWT)
+- **Preuve attendue :** un nœud tué est retiré de la liste des vivants en moins de 10 s
+- **Décision à documenter :** le keep-alive choisi et son coût (fallacy 7)
+
 ## Fil rouge
 
 | Fil rouge  | Activité                                                              |
@@ -30,3 +45,4 @@ Découper en services qui se parlent par messages, chacun avec son équipe et so
 | UMDD       | [Log et annuaire](../activites/fil-rouge/umdd/log-annuaire.md)        |
 | Powercher  | [Powercher](../activites/fil-rouge/powercher/README.md#microservices) |
 | Pedaloland | [Mapping](../activites/fil-rouge/pedalo/README.md)                    |
+| Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) |

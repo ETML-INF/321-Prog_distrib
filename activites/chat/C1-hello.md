@@ -16,13 +16,14 @@ Un programme (sans interface graphique obligatoire) qui envoie et reçoit des me
 → *Pas de « parce que je connais » seul* : quelle alternative avez-vous écartée ?
 
 **1. Connectez-vous au broker** `localhost:1883` avec comme identifiant client **votre prénom**.  
+La **racine des topics** (`chat`) doit être un paramètre de configuration, pas une constante dans le code : vous la changerez à la fin de la spirale.  
 → Vérifiez dans `docker compose logs broker --tail 5` : `New client connected from … as <prénom>`.
 
-**2. Abonnez-vous** à `dousville/chat/all` et affichez chaque message reçu (auteur, texte).  
-→ Vérifiez : depuis un autre terminal, publiez à la main une enveloppe valide (voir l'[exemple du contrat](../contrats/README.md#enveloppe)) avec `DC mosquitto_pub -t dousville/chat/all -m '<enveloppe>'`. Votre programme l'affiche.
+**2. Abonnez-vous** à `chat/all` et affichez chaque message reçu (auteur, texte).  
+→ Vérifiez : depuis un autre terminal, publiez à la main une enveloppe valide (voir l'[exemple du contrat](../contrats/README.md#enveloppe)) avec `DC mosquitto_pub -t chat/all -m '<enveloppe>'`. Votre programme l'affiche.
 
-**3. Envoyez** : votre programme construit une enveloppe valide (nouvel `id`, `ts` en UTC, `type` `chat`) et la publie sur `dousville/chat/all`.  
-→ Vérifiez : `DC mosquitto_sub -t 'dousville/chat/#' -v` montre un JSON qui **valide** contre [envelope](../contrats/envelope.schema.json) **et** [chat](../contrats/chat.schema.json).
+**3. Envoyez** : votre programme construit une enveloppe valide (nouvel `id`, `ts` en UTC, `type` `chat`) et la publie sur `chat/all`.  
+→ Vérifiez : `DC mosquitto_sub -t 'chat/#' -v` montre un JSON qui **valide** contre [envelope](../contrats/envelope.schema.json) **et** [chat](../contrats/chat.schema.json).
 
 **4. Entrée hostile.** Publiez à la main : `pas du json` ; `{"v":1}` ; une enveloppe valide avec `"type":"inconnu"`.  
 → Votre chat ne plante pas ; il écrit une ligne `message ignoré : <raison>` pour chacun.
@@ -41,4 +42,4 @@ Un programme (sans interface graphique obligatoire) qui envoie et reçoit des me
 - [ ] vous savez dire pourquoi `ts` est en UTC et d'où vient l'`id`
 
 ## Si vous utilisez une IA
-Votre prompt doit citer : le contrat (lien/fichier), le schéma, le comportement face à un message invalide, et un test d'acceptation (étape 4). Voir la [grille](../../evaluation/umdd-v2.md).
+Votre prompt doit citer : le contrat (lien/fichier), le schéma, le comportement face à un message invalide, et un test d'acceptation (étape 4). Voir la [grille](../../evaluation/grille.md).

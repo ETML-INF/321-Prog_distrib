@@ -19,19 +19,19 @@ Le broker annonce le « testament » (LWT) d'un client quand il constate sa mort
 
 ## 2. Mort franche (kill)
 
-1. T1 observe la présence : `DC mosquitto_sub -t 'dousville/presence/#' -v -W 60`
+1. T1 observe la présence : `DC mosquitto_sub -t 'lab/presence/#' -v -W 60`
 2. T2 lance Alice avec un testament : 
    ```
-   DC mosquitto_sub -i alice -t dousville/lab/x -k 5 -W 120 --will-topic dousville/presence/alice --will-payload "alice died"
+   DC mosquitto_sub -i alice -t lab/x -k 5 -W 120 --will-topic lab/presence/alice --will-payload "alice died"
    ```
 3. T3 la tue : `DC sh -c 'pkill -9 -f "mosquitto_sub -i alice"'`  
-   → T1 affiche **presque aussitôt** `dousville/presence/alice alice died` (≈ 1 à 2 s : surtout le coût de la commande Docker). Le système d'exploitation a fermé la connexion TCP, le broker l'a vu.
+   → T1 affiche **presque aussitôt** `lab/presence/alice alice died` (≈ 1 à 2 s : surtout le coût de la commande Docker). Le système d'exploitation a fermé la connexion TCP, le broker l'a vu.
 
 ## 3. Mort silencieuse (câble débranché)
 
 4. T1 observe toujours. T2 lance Dave **via le proxy** :
    ```
-   DC mosquitto_sub -h toxiproxy -p 1884 -i dave -t dousville/lab/x -k 5 -W 120 --will-topic dousville/presence/dave --will-payload "dave died"
+   DC mosquitto_sub -h toxiproxy -p 1884 -i dave -t lab/x -k 5 -W 120 --will-topic lab/presence/dave --will-payload "dave died"
    ```
 5. T3 « débranche le câble » sans fermer quoi que ce soit : `docker compose exec toxiproxy /toxiproxy-cli toxic add -t timeout -a timeout=0 mqtt`. Chronométrez.  
    → T1 affiche `dave died` après **≈ 8 à 10 s**. Le broker attend 1,5 × le keep-alive (7,5 s) sans nouvelle avant de conclure.
@@ -41,11 +41,11 @@ Le broker annonce le « testament » (LWT) d'un client quand il constate sa mort
 
 7. Un keep-alive de 60 s est un réglage courant. Quel délai de détection d'une mort silencieuse ?  
    → 1,5 × 60 = **90 s**.
-8. Votre annuaire doit retirer une BP morte en moins de 10 s. Quel keep-alive choisir ? Quel est le prix ? (pensez à la fallacy 7)  
+8. Votre annuaire doit retirer un nœud mort en moins de 10 s. Quel keep-alive choisir ? Quel est le prix ? (pensez à la fallacy 7)  
    → ≤ 6 s (donc 5 s, minimum de l'outil) ; le prix : un message de contrôle toutes les 5 s par client, sur batterie c'est cher (D10).
 
 ## Extension (facultative)
-Relancez Alice avec `--will-retain` : un observateur qui arrive *après* la mort voit encore `alice died`. Nettoyez ensuite avec `DC mosquitto_pub -r -n -t dousville/presence/alice`.
+Relancez Alice avec `--will-retain` : un observateur qui arrive *après* la mort voit encore `alice died`. Nettoyez ensuite avec `DC mosquitto_pub -r -n -t lab/presence/alice`.
 
 ## Débrief
 

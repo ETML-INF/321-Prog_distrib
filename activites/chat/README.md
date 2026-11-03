@@ -1,6 +1,6 @@
-# Le chat de Dousville (spirale individuelle)
+# Le chat (spirale individuelle)
 
-Chaque étudiant construit **son** chat, dans **le langage de son choix**, en 8 étapes guidées. À chaque thématique du module, le chat reçoit **une** amélioration qui met en pratique le thème du jour. Il sert aussi de banc d'essai avant de construire les services de la ville ([fil rouge](../fil-rouge/README.md)).
+Chaque étudiant construit **son** chat, dans **le langage de son choix**, en 8 étapes guidées. À chaque thématique du module, le chat reçoit **une** amélioration qui met en pratique le thème du jour. C'est un banc d'essai de plomberie, sans lien avec un scénario : il utilise sa propre racine de topics `chat/`. Ses briques sont ensuite réutilisées dans le [fil rouge](../fil-rouge/README.md).
 
 ```mermaid
 flowchart LR
@@ -22,11 +22,15 @@ flowchart LR
 
 - **Individuel**, un dossier par étudiant (`chat-<prénom>`), un `git commit` par étape terminée.
 - **Langage libre.** Contrainte : une bibliothèque MQTT mature (client MQTT 3.1.1 au minimum). Vous justifiez votre choix en C1.
-- **IA autorisée si vous comprenez.** Chaque étape se termine par une rubrique *Terminé quand* : on vous demandera de l'expliquer, voir [évaluation](../../evaluation/umdd-v2.md).
+- **IA autorisée si vous comprenez.** Chaque étape se termine par une rubrique *Terminé quand* : on vous demandera de l'expliquer, voir [évaluation](../../evaluation/grille.md).
 - **Le contrat fait foi** : [activites/contrats](../contrats/README.md). Vous n'inventez ni topics ni champs sans le faire amender.
 - **Les outils de vérification sont dans le labo** : [infra](../infra/README.md). `DC` = `docker compose exec broker` (à lancer depuis `activites/infra`).
 - **Un `NOTES.md` à la racine de votre dossier** : 2 lignes par étape (« ce que j'ai compris », « ce qui a cassé »). Il servira de base à l'oral.
 
-## Après la spirale
+## Les canaux
 
-Le chat est la base de plomberie (connexion, enveloppe, validation, reconnexion, signature) que vous **réutiliserez** pour les services Dousville de votre groupe.
+Les topics du chat sont sous la racine `chat/` : `chat/all`, `chat/dm/<prénom>`, `chat/presence/<prénom>`, `chat/log/<prénom>`. Ils sont **communs à la classe** sur le broker partagé. En cas de conflit (deux élèves avec le même prénom, un canal détourné), c'est un sujet de discussion normal, et les canaux pourront être ajustés par l'enseignant ou la classe.
+
+## Étape finale : réutiliser son chat
+
+Pointez votre chat sur la racine de votre [scénario](../fil-rouge/README.md) **par simple configuration, sans modifier le code**, et observez votre présence et votre battement à côté de ceux des autres nœuds. Si vous devez changer du code, la racine était codée en dur : c'est la leçon (fallacy 8, le réseau n'est pas homogène). La plomberie (connexion, enveloppe, validation, reconnexion, signature, battement) est celle que vous utiliserez pour les services de votre groupe.

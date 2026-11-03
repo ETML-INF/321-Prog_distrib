@@ -69,5 +69,5 @@ Chaque bibliothèque a son mécanisme pour les deux derniers points ; le princip
 
 ## Pour s'exercer
 
-- Drill : [D01](../activites/drills/D01-serialisation.md) · Chat : [C1](../activites/chat/C1-hello.md) · Contrat : [Dousville](../activites/contrats/README.md)
-- Activité historique : [Sérialise ma série](../activites/serial/README.md)
+- Drill : [D01](../activites/drills/D01-serialisation.md) · Chat : [C1](../activites/chat/C1-hello.md) · Contrat : [contrat de base](../activites/contrats/README.md)
+- Activité alternative : [Sérialise ma série](../activites/serial/README.md)

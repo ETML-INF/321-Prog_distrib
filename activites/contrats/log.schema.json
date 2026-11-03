@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dousville/log",
+  "$id": "contrat/log",
   "title": "Payload log",
   "type": "object",
   "required": ["level", "text"],

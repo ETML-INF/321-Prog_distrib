@@ -13,7 +13,7 @@ Mesurer le coût réel d'un message, et constater qu'un changement de nom de cha
 
 ## Étapes
 
-1. **Écrivez à la main** (sans outil de génération) le JSON de cette boulangerie : nom `Chez Léa`, une spécialité `Croissant` à `1.8`. Respectez le [schéma business](../contrats/business.schema.json). Enregistrez-le en UTF-8 dans `business.json`, **sans retour à la ligne final**, sans espaces inutiles.  
+1. **Écrivez à la main** (sans outil de génération) le JSON de ce commerce : nom `Chez Léa`, une spécialité `Croissant` à `1.8`. Respectez le [schéma catalogue](catalogue.schema.json). Enregistrez-le en UTF-8 dans `business.json`, **sans retour à la ligne final**, sans espaces inutiles.  
    → Fichier de la forme `{"name":"Chez Léa","specialties":[{"name":"Croissant","price":1.8}]}`.
 
 2. **Comptez les octets** (`wc -c business.json`, ou propriétés du fichier).  
@@ -22,7 +22,7 @@ Mesurer le coût réel d'un message, et constater qu'un changement de nom de cha
 3. **Réécrivez-le indenté** (2 espaces par niveau, une propriété par ligne) et recomptez.  
    → environ **107 octets** : même information, +55 % de poids. Qui paie cette lisibilité ?
 
-4. **Validez** votre fichier avec le schéma `business.schema.json`.  
+4. **Validez** votre fichier avec le schéma `catalogue.schema.json`.  
    → valide ✔. Mettez `"price":"1.8"` (texte) : le validateur refuse. C'est le contrat qui parle, pas votre code.
 
 5. **Décodez une version binaire** (MessagePack) du même objet, 60 octets :

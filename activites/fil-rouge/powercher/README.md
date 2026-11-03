@@ -10,7 +10,25 @@ Scénario existant : chaque étudiant construit une maison équipée d'appareils
 Dépôt : [ETML-INF/powercher](https://github.com/ETML-INF/powercher) (broker RabbitMQ, voir `csharp/powercher25/compose.yaml`).  
 Variante de labo : `docker compose --profile rabbitmq up -d` dans [infra](../../infra/README.md) (MQTT sur le port `1885`, utilisateur `ict`, mot de passe `321`).
 
-> Ici le **langage de la maison** est celui du dépôt (C#). Le contrat et les drills restent ceux du module ; les services centraux imposent leur [protocole Powercher](https://github.com/ETML-INF/powercher/tree/main/Backend/Protocol) (plutôt que l'[enveloppe Dousville](../../contrats/README.md)), ce qui est en soi un cas d'**hétérogénéité** (fallacy 8) : à documenter, la maison doit traduire.
+> Ici le **langage de la maison** est celui du dépôt (C#). Le contrat et les drills restent ceux du module ; les services centraux imposent leur [protocole Powercher](https://github.com/ETML-INF/powercher/tree/main/Backend/Protocol) (plutôt que l'enveloppe du [contrat de base](../../contrats/README.md)), ce qui est en soi un cas d'**hétérogénéité** (fallacy 8) : à documenter, la maison doit traduire.
+
+## Couverture des exigences
+
+Cas « adaptateur » : le scénario impose son protocole, la maison traduit vers et depuis le [contrat de base](../../contrats/README.md). Exigences génériques : [contrat de scénario](../README.md#contrat-de-scenario). Services possibles : [catalogue](../services.md).
+
+| Thématique | Couvert par | Manque |
+|---|---|---|
+| Sérialisation | messages `TOWN_ENVIRONMENT`, `HOUSE_STATUS`, `CASH` | trois entrées hostiles à formaliser |
+| Temps | Mère Nature | décalage d'horloge injecté à écrire |
+| MQTT | Hello Powercher, LWT | flux retenu / non retenu à expliciter |
+| Microservices | maison comme service, minute de silence | délai de détection à chiffrer |
+| Idempotence | dédoublonnage sur l'enveloppe | borne de mémoire à écrire |
+| Transactions | achat/vente avec PowerDeal | scénario de panne au milieu à écrire |
+| Résilience | timeouts, backoff | panne provoquée à écrire |
+| Cluster et P2P | achat entre maisons (`recipientId`) | élection / perte d'un membre à écrire |
+| Sécurité | réseau de confiance (AES) | usurpation et rejeu à écrire |
+| Supervision | PowerWatch | battement et délai à écrire |
+| Énergie | bilan énergétique | perte de messages à écrire |
 
 ## Mise en route (reprise des anciennes thématiques)
 
@@ -40,7 +58,7 @@ Drill : [D04](../../drills/D04-mort-noeud.md) · Chat : [C4](../../chat/C4-mort.
 Drill : [D05](../../drills/D05-idempotence.md), [D06](../../drills/D06-transaction.md) · Chat : [C5](../../chat/C5-doublons.md)
 
 ### Résilience et cluster {#resilience}
-**Résilience.** Timeouts sur les messages de *deal*, [exponential backoff](../../../supports/design4failure.md#stratégie-de-retry). Achat entre maisons (P2P) avec le `recipientId`.  
+**Résilience.** Timeouts sur les messages de *deal*, [exponential backoff](../../../supports/design4failure.md#strategie-de-retry). Achat entre maisons (P2P) avec le `recipientId`.  
 Drill : [D07](../../drills/D07-retry.md), [D08](../../drills/D08-cluster.md) · Chat : [C6](../../chat/C6-reconnexion.md)
 
 ### Sécurité {#securite}

@@ -32,7 +32,7 @@ export default withMermaid(defineConfig({
   base: pkg.siteBase,
 
   // Slidev sources are built separately into dist/slides
-  srcExclude: ['slides/**', 'node_modules/**'],
+  srcExclude: ['slides/**', 'node_modules/**', 'docs/superpowers/**'],
 
   rewrites: {
     'README.md': 'index.md',
@@ -54,6 +54,17 @@ export default withMermaid(defineConfig({
       '/': [
         { text: 'Thématiques', collapsed: false, items: toItems('thematiques/*.md') },
         { text: 'Supports', collapsed: true, items: toItems('supports/*.md') },
+        {
+          text: 'Fil rouge',
+          collapsed: true,
+          items: [
+            { text: 'Choisir son scénario', link: '/activites/fil-rouge/' },
+            { text: 'Catalogue de services', link: '/activites/fil-rouge/services' },
+            { text: 'Fil rouge libre', link: '/activites/fil-rouge/libre/' },
+            { text: 'Gabarit de scénario', link: '/activites/fil-rouge/modele/' },
+            { text: 'Évaluation', link: '/evaluation/grille' },
+          ],
+        },
         {
           text: 'Activités',
           collapsed: true,

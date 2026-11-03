@@ -53,7 +53,7 @@ Un client peut demander une session persistante (identifiant client stable, sess
 
 ### Retained Messages (Messages conservés)
 
-Le broker garde le **dernier** message retenu d'un topic et le remet immédiatement à tout nouvel abonné. Utile pour un état courant (« la boulangerie est ouverte », une alerte). Danger : un état retenu peut **mentir** (le client est mort, son dernier message dit encore « ouvert ») : on le corrige avec un LWT retenu. Pour effacer un message retenu : publier un contenu vide avec retain.
+Le broker garde le **dernier** message retenu d'un topic et le remet immédiatement à tout nouvel abonné. Utile pour un état courant (« le service est ouvert », une alerte). Danger : un état retenu peut **mentir** (le client est mort, son dernier message dit encore « ouvert ») : on le corrige avec un LWT retenu. Pour effacer un message retenu : publier un contenu vide avec retain.
 
 ### Bufferisation
 

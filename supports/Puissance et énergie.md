@@ -36,6 +36,6 @@ De retour chez lui, notre cycliste a bien mérité une douche de 10 minutes. Si 
 - Un appareil sur **batterie** a une réserve d'énergie : capacité (en Ah) × tension (en V) = énergie (en Wh). Par exemple 2 Ah × 3,7 V = 7,4 Wh.
 - Son autonomie = énergie de la batterie / puissance moyenne consommée. La puissance moyenne dépend de la **fréquence d'envoi** : chaque message sorti de la veille coûte de l'énergie.
 - Un **keep-alive** court, un heartbeat rapproché, un sondage fréquent : autant de messages « pour rien » qui épuisent l'appareil ([MQTT](mqtt.md#keep-alive)).
-- Du côté d'une maison connectée ([Powercher](../activites/fil-rouge/powercher/README.md#supervision-energie)) : le **bilan énergétique** est la somme `durée × puissance` des producteurs moins celle des consommateurs.
+- Du côté d'un nœud qui produit et consomme (une maison connectée, une usine) : le **bilan énergétique** est la somme `durée × puissance` des producteurs moins celle des consommateurs.
 
 Calculez : [D10](../activites/drills/D10-monitoring-energie.md), partie 3.

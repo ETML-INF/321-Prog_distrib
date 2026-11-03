@@ -7,6 +7,7 @@ Deux premiers microservices : un service qui **écoute** (Log) et un service qui
 | Prérequis | [D04](../../drills/D04-mort-noeud.md) · [C4](../../chat/C4-mort.md)                |
 | Fallacy   | 1 (fiabilité), 5 (topologie), 6 (plusieurs administrateurs)                        |
 | Contrat   | [log](../../contrats/log.schema.json) fourni ; **annuaire à écrire par la classe** |
+| Exigence | [Microservices](../../../thematiques/04-microservices.md#exigences-du-fil-rouge) |
 
 ## A. LogService (écriture seule)
 

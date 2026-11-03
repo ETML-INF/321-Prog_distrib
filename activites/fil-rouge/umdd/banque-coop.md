@@ -6,7 +6,8 @@ De l'argent et un stock : la première fois que « ça marche presque » coûte 
 |---|---|
 | Prérequis | [D05](../../drills/D05-idempotence.md) · [D06](../../drills/D06-transaction.md) · [C5](../../chat/C5-doublons.md) |
 | Fallacy | 1 (fiabilité), 6 (plusieurs administrateurs) |
-| Contrat | **banque et coopérative à écrire par la classe** (voir [contrats](../../contrats/README.md#contrats-écrits-par-la-classe-microservices-idempotence-et-transactions)) |
+| Contrat | **banque et coopérative à écrire par la classe** (voir [contrats](../../contrats/README.md#contrats-ecrits-par-la-classe)) |
+| Exigence | [Idempotence](../../../thematiques/05-idempotence.md#exigences-du-fil-rouge) · [Transactions](../../../thematiques/06-transactions.md#exigences-du-fil-rouge) |
 
 ## A. La coopérative (entrepôt)
 

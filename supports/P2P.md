@@ -22,7 +22,7 @@ C'est une architecture distribuée : elle présente les mêmes avantages et inco
 
 ## Et avec un broker ?
 
-Un broker MQTT est un point central : on n'est pas en P2P pur. On peut toutefois s'en approcher : les pairs s'**annoncent** (présence), se **découvrent** (annuaire ou retain) et s'adressent directement par des topics dédiés (un topic par destinataire, comme `recipientId` dans Powercher ou `chat/dm/<nom>` dans Dousville). Le broker n'est plus qu'un tuyau, mais reste un point de défaillance : voir [Cluster](cluster.md).
+Un broker MQTT est un point central : on n'est pas en P2P pur. On peut toutefois s'en approcher : les pairs s'**annoncent** (présence), se **découvrent** (annuaire ou retain) et s'adressent directement par des topics dédiés (un topic par destinataire, comme un identifiant de destinataire dans le message ou `chat/dm/<nom>` dans le chat). Le broker n'est plus qu'un tuyau, mais reste un point de défaillance : voir [Cluster](cluster.md).
 
 ## Conclusion
 

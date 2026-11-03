@@ -17,7 +17,7 @@ Les messages `chat` sont signés ; un message modifié, usurpé ou rejoué est r
 | Question | Pourquoi c'est difficile |
 |---|---|
 | Que signe-t-on exactement ? | Deux langages sérialisent le même JSON avec des espaces ou un ordre de clés différents : la signature ne se vérifie pas. |
-| Quelle clé, partagée avec qui ? | Un secret par paire ? par groupe ? une paire de clés par BP ? |
+| Quelle clé, partagée avec qui ? | Un secret par paire ? par groupe ? une paire de clés par nœud ? |
 | Que fait un récepteur v1 d'un message v2 ? | Si l'enveloppe est stricte, il le rejette (fallacy 6). |
 
 → Indice : cherchez « JSON canonicalization » ; ou signez une chaîne que vous construisez vous-mêmes à partir des champs, dans un ordre fixé par le contrat.
@@ -34,7 +34,7 @@ Les messages `chat` sont signés ; un message modifié, usurpé ou rejoué est r
 
 **6. Stockage de la clé.** Où votre programme lit-il la clé ? (Pas dans le dépôt Git.)
 
-**7. (Facultatif) Confidentialité.** Chiffrez le `text` des messages privés. Qui connaît la clé ? Que voit l'observateur sur `dousville/chat/dm/#` ?
+**7. (Facultatif) Confidentialité.** Chiffrez le `text` des messages privés. Qui connaît la clé ? Que voit l'observateur sur `chat/dm/#` ?
 
 ## Terminé quand
 

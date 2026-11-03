@@ -12,11 +12,11 @@ Quand votre chat meurt, les autres le savent sans que vous ayez rien fait.
 
 ## Étapes
 
-**1. Déclarez un testament à la connexion.** Topic `dousville/presence/<votre prénom>`, QoS 1, **retain**, contenu : une enveloppe `presence` avec `"state":"died"`. Keep-alive : **5 s**.  
+**1. Déclarez un testament à la connexion.** Topic `chat/presence/<votre prénom>`, QoS 1, **retain**, contenu : une enveloppe `presence` avec `"state":"died"`. Keep-alive : **5 s**.  
 → Attention : le testament est construit **au moment de la connexion**. Son `id` et son `ts` seront ceux de cet instant. Est-ce un problème ? Notez votre réponse.
 
 **2. Mort franche.** Tuez votre chat (`kill -9`) comme dans D04.  
-→ Vérifiez : un observateur (`DC mosquitto_sub -t 'dousville/presence/#' -v`) voit `died` en 1 à 2 s.
+→ Vérifiez : un observateur (`DC mosquitto_sub -t 'chat/presence/#' -v`) voit `died` en 1 à 2 s.
 
 **3. Mort silencieuse.** Connectez votre chat **via le proxy** (`localhost:1884`), puis `docker compose exec toxiproxy /toxiproxy-cli toxic add -t timeout -a timeout=0 mqtt`. Chronométrez.  
 → Vérifiez : `died` apparaît après ≈ 8 à 10 s. Retirez ensuite le toxic.

@@ -30,7 +30,7 @@ Le service *notifications*, abonné, envoie la notification quand il le peut. Av
 
 ## Un contrat par service
 
-Comme chaque service a son équipe, ce qui les relie est un **contrat** : topics ou routes, forme des messages, erreurs. Un contrat ambigu rend le service inutilisable. Le format devient une affaire de langage commun ([Sérialisation](Sérialisation.md)) et non de code partagé : chaque équipe peut choisir son langage (fallacy 8). Dans ce module : [contrat Dousville](../activites/contrats/README.md).
+Comme chaque service a son équipe, ce qui les relie est un **contrat** : topics ou routes, forme des messages, erreurs. Un contrat ambigu rend le service inutilisable. Le format devient une affaire de langage commun ([Sérialisation](Sérialisation.md)) et non de code partagé : chaque équipe peut choisir son langage (fallacy 8). Dans ce module : [contrat de base](../activites/contrats/README.md).
 
 ## Avantages et inconvénients
 
@@ -45,4 +45,4 @@ La résilience n'est pas automatique : elle exige qu'un service sache qu'un vois
 
 ## Pour s'exercer
 
-- Drill : [D04](../activites/drills/D04-mort-noeud.md) · Chat : [C4](../activites/chat/C4-mort.md) · Fil rouge : [log et annuaire](../activites/fil-rouge/umdd/log-annuaire.md)
+- Drill : [D04](../activites/drills/D04-mort-noeud.md) · Chat : [C4](../activites/chat/C4-mort.md) · Fil rouge : [services](../activites/fil-rouge/services.md)

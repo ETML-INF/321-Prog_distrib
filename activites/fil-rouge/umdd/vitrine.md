@@ -6,7 +6,8 @@ Avant de bâtir la ville, chacun ouvre sa boulangerie-pâtisserie (BP) et on se 
 |-----------|------------------------------------------------------------------------------------------|
 | Prérequis | [D01](../../drills/D01-serialisation.md) · [C1](../../chat/C1-hello.md)                  |
 | Fallacy   | 3 (bande passante), 8 (réseau homogène)                                                  |
-| Contrat   | [business](../../contrats/business.schema.json), topic `dousville/vitrine/<bp>` (retain) |
+| Contrat   | [business](business.schema.json), topic `dousville/vitrine/<bp>` (retain) |
+| Exigence | [Sérialisation](../../../thematiques/01-serialisation.md#exigences-du-fil-rouge) |
 
 ## Mission
 

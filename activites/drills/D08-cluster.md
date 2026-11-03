@@ -15,10 +15,10 @@ Deux manières de partager le travail entre instances identiques d'un service (r
 
 ## Partie 1 : répartir la charge (CLI)
 
-1. T1 : `DC mosquitto_sub -V mqttv5 -i dir1 -t '$share/dir/dousville/lab/q' -W 90 -v`
-2. T2 : `DC mosquitto_sub -V mqttv5 -i dir2 -t '$share/dir/dousville/lab/q' -W 90 -v`
+1. T1 : `DC mosquitto_sub -V mqttv5 -i dir1 -t '$share/dir/lab/q' -W 90 -v`
+2. T2 : `DC mosquitto_sub -V mqttv5 -i dir2 -t '$share/dir/lab/q' -W 90 -v`
 3. T3 : envoyez quatre requêtes, une par une :  
-   `DC mosquitto_pub -t dousville/lab/q -m req1` (puis `req2`, `req3`, `req4`)  
+   `DC mosquitto_pub -t lab/q -m req1` (puis `req2`, `req3`, `req4`)  
    → chaque requête arrive **chez un seul** des deux abonnés, en alternance (dir2 reçoit req1, dir1 reçoit req2…).
 4. Tuez dir1 (Ctrl+C dans T1) et envoyez `req5`, `req6`.  
    → tout arrive chez dir2 : le **failover** vient gratuitement.
@@ -27,7 +27,7 @@ Remarque : `$share` en minuscules, et `-V mqttv5` obligatoires. Une variante san
 
 ## Partie 2 : élire un seul répondant (papier)
 
-Quatre annuaires `d1`…`d4` identiques. Règle proposée : **« le plus petit identifiant vivant répond »**. « Vivant » = a publié `dousville/presence/dX` retenu = `open` et son testament (D04) n'est pas passé.
+Quatre annuaires `d1`…`d4` identiques. Règle proposée : **« le plus petit identifiant vivant répond »**. « Vivant » = a publié `lab/presence/dX` retenu = `open` et son testament (D04) n'est pas passé.
 
 5. Pour chaque scénario, indiquez qui répond et s'il y a un problème :
 
@@ -41,7 +41,7 @@ Quatre annuaires `d1`…`d4` identiques. Règle proposée : **« le plus petit i
 
    → d1 · d2, après le testament de d1 (immédiat) · **personne** pendant la détection (≈ 7,5 s) · **d1 et d2** répondent, c'est le *split brain* · d1 reprend (et d2 doit s'effacer).
 
-6. Qu'est-ce qui est le plus grave : « personne ne répond pendant 8 s », ou « deux répondent » ? Répondez pour (a) un annuaire qui renvoie la liste des boulangeries ouvertes ; (b) une banque qui exécute des transferts.  
+6. Qu'est-ce qui est le plus grave : « personne ne répond pendant 8 s », ou « deux répondent » ? Répondez pour (a) un annuaire qui renvoie la liste des services ouverts ; (b) une banque qui exécute des transferts.  
    → (a) deux réponses identiques : sans conséquence, le client prend la première. (b) deux exécutions : **double paiement** sauf si la banque est idempotente (D05).
 
 ## Débrief

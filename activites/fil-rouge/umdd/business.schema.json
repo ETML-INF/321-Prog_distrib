@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "umdd/business",
+  "title": "Payload business (boulangerie-pâtisserie)",
+  "type": "object",
+  "required": ["name", "specialties"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "sign": { "type": "string", "contentEncoding": "base64", "description": "image de l'enseigne" },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "price"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "image": { "type": "string", "contentEncoding": "base64" },
+          "price": { "type": "number", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

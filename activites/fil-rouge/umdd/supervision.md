@@ -6,7 +6,8 @@ Pour que chaque BP mène son activité sereinement, une entité dédiée surveil
 |---|---|
 | Prérequis | [D10](../../drills/D10-monitoring-energie.md) · [C8](../../chat/C8-sante.md) |
 | Fallacy | 7 (coût), 1 (fiabilité) |
-| Contrat | battement et alertes à définir par le groupe Supervision |
+| Contrat | battement : voir le [contrat de base](../../contrats/README.md#battement-heartbeat) ; seules les alertes (`dousville/alerts`) sont à définir par le groupe Supervision |
+| Exigence | [Supervision](../../../thematiques/10-supervision.md#exigences-du-fil-rouge) · [Énergie](../../../thematiques/11-energie.md#exigences-du-fil-rouge) |
 
 ## Mission
 

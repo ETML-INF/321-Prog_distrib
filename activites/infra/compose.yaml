@@ -1,8 +1,8 @@
-# Laboratoire Dousville : un hôte, un broker, des pannes à la demande.
+# Laboratoire : un hôte, un broker, des pannes à la demande.
 #   docker compose up -d                       broker + proxy de pannes
-#   docker compose --profile rabbitmq up -d    + RabbitMQ (comme Powercher)
+#   docker compose --profile rabbitmq up -d    + RabbitMQ
 # Voir README.md pour les scénarios de panne.
-name: dousville
+name: lab
 
 services:
   broker:
@@ -26,7 +26,7 @@ services:
     depends_on:
       - broker
 
-  # Optionnel : même contrat MQTT, autre broker (voir csharp/powercher25/compose.yaml)
+  # Optionnel : même contrat MQTT, autre broker (par exemple RabbitMQ avec le plugin MQTT)
   rabbitmq:
     profiles: ["rabbitmq"]
     image: rabbitmq:4.0-management

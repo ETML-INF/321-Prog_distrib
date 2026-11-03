@@ -8,7 +8,12 @@ Un protocole de messagerie léger, ses garanties de livraison (QoS), ses présen
 - utiliser les wildcards et séparer les flux par topics
 - expliquer ce que le broker garantit et ce qu'il ne garantit pas
 
-**Fallacies :** 1 (fiabilité), 2 (latence). Voir [les 8 fallacies](../supports/fallacies.md).
+**Fallacies :**
+
+- [1 — Le réseau est fiable](../supports/fallacies.md#fallacy-1)
+- [2 — La latence est nulle](../supports/fallacies.md#fallacy-2)
+
+Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [MQTT](../supports/mqtt.md)
@@ -20,6 +25,15 @@ Un protocole de messagerie léger, ses garanties de livraison (QoS), ses présen
 ## Chat
 - [C3 — Présence et messages privés](../activites/chat/C3-presence.md)
 
+## Exigences du fil rouge
+
+Quel que soit le scénario choisi, il doit, pour cette thématique :
+
+- **Services attendus :** [Source de temps](../activites/fil-rouge/services.md#cat-source-de-temps)
+- **Doit introduire :** un premier service branché sur le bus, avec au moins un flux d'état retenu et un flux d'événements non retenu
+- **Preuve attendue :** un nœud qui arrive tard voit tout de suite l'état courant, et ne reçoit pas les anciens événements
+- **Décision à documenter :** le QoS retenu pour chaque flux, avec la raison
+
 ## Fil rouge
 
 | Fil rouge  | Activité                                                                        |
@@ -27,5 +41,6 @@ Un protocole de messagerie léger, ses garanties de livraison (QoS), ses présen
 | UMDD       | [TimeService (premier service sur le bus)](../activites/fil-rouge/umdd/time.md) |
 | Powercher  | [Powercher](../activites/fil-rouge/powercher/README.md#temps-protocole)         |
 | Pedaloland | [Mapping](../activites/fil-rouge/pedalo/README.md)                              |
+| Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) |
 
-Activité historique : [Footchat](../activites/footchat/README.md) (échauffement MQTT)
+Activité alternative : [Footchat](../activites/footchat/README.md) (échauffement MQTT)
