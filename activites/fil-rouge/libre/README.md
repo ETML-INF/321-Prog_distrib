@@ -134,6 +134,58 @@ Un achat est une enveloppe du [contrat de base](../../contrats/README.md#envelop
  "payload":{"item":"biere","qty":1,"tokens":4}}
 ```
 
+### La vitrine : la fiche de stand
+
+C'est le premier message à écrire (thématique [Sérialisation](../../../thematiques/01-serialisation.md#exigences-du-fil-rouge)) : chaque stand publie sa fiche **retenue** sur `festival/vitrine/<stand>`, et tout nouveau venu la voit tout de suite. Dans l'enveloppe, le `type` est `stand` :
+
+```json
+{"v":1,"id":"b2f0c7de-51a4-4f0e-9d0b-3a8e6c1d7f42","from":"buvette-nord","to":"*",
+ "ts":"2026-11-03T18:00:00Z","type":"stand",
+ "payload":{"name":"Buvette Nord","kind":"buvette","open":true,"queue":12,
+            "items":[{"name":"biere","tokens":4},{"name":"limonade","tokens":3}]}}
+```
+
+Son schéma `stand.schema.json` décrit le **payload** seulement (l'enveloppe est déjà validée par le [contrat de base](../../contrats/envelope.schema.json)) :
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "festival/stand",
+  "title": "Payload stand (fiche de stand)",
+  "type": "object",
+  "required": ["name", "kind", "open", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["buvette", "scene", "merch", "accueil"] },
+    "open": { "type": "boolean" },
+    "queue": { "type": "integer", "minimum": 0 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "tokens"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "tokens": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}
+```
+
+Les trois entrées hostiles de l'exigence, à rejouer à la main contre ce schéma (aucune ne doit faire planter le *billboard*) :
+
+| Entrée | Exemple | Pourquoi elle est rejetée |
+|---|---|---|
+| texte non JSON | `bonjour les stands` | ne se désérialise pas |
+| champ manquant | `"payload":{"name":"Buvette Nord","kind":"buvette","open":true}` | `items` est obligatoire |
+| type inconnu | `"payload":{"name":"Buvette Nord","kind":"cirque","open":true,"items":[]}` | `cirque` n'est pas dans l'énumération `kind` |
+
+> Poids : cette fiche fait environ 250 octets. Ajoutez une image en base64 et elle dépasse 20 Ko : choisissez, et notez la raison (fallacy 3).
+
 ### Couverture des exigences (extrait)
 
 | Thématique | Exigence satisfaite | Manque |

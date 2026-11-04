@@ -1,7 +1,9 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import { glob } from 'glob'
+import { copyFileSync, mkdirSync } from 'fs'
 import path from 'path'
+import type MarkdownIt from 'markdown-it'
 import pkg from '../package.json'
 
 // Fail build when siteBase doesn't match the actual GitHub repo name (CI only)
@@ -13,7 +15,7 @@ if (process.env.GITHUB_REPOSITORY) {
   }
 }
 
-process.env.VITE_EXTRA_EXTENSIONS = 'docx,pdf,pptx,zip,csv,xlsx'
+process.env.VITE_EXTRA_EXTENSIONS = 'docx,pdf,pptx,zip,csv,xlsx,json'
 
 const repoUrl = process.env.GITHUB_REPOSITORY
   ? `https://github.com/${process.env.GITHUB_REPOSITORY}`
@@ -23,6 +25,23 @@ const toItems = (pattern: string) =>
   glob.sync(pattern, { posix: true, ignore: ['**/README.md', 'node_modules/**'] })
     .sort()
     .map(f => ({ text: path.basename(f, '.md'), link: '/' + f.replace(/\.md$/, '') }))
+
+// README.md est réécrit en index.md (cf. rewrites) : les liens vers README.md/README.html
+// (écrits pour GitHub) doivent pointer vers le dossier, sinon ils donnent /README.html (404)
+function readmeLinksPlugin(md: MarkdownIt) {
+  md.core.ruler.push('readme-links', (state) => {
+    for (const blockToken of state.tokens) {
+      if (blockToken.type !== 'inline' || !blockToken.children) continue
+      for (const token of blockToken.children) {
+        if (token.type !== 'link_open') continue
+        const href = token.attrGet('href') ?? ''
+        if (/^[a-z][a-z0-9+.-]*:/i.test(href)) continue // liens externes
+        const fixed = href.replace(/(^|\/)README\.(?:md|html)(?=[#?]|$)/, '$1')
+        if (fixed !== href) token.attrSet('href', fixed || './')
+      }
+    }
+  })
+}
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(defineConfig({
@@ -41,7 +60,16 @@ export default withMermaid(defineConfig({
     ':dir/:sub/:sub2/README.md': ':dir/:sub/:sub2/index.md',
   },
 
-  markdown: { math: true },
+  // Les .json (schémas, config) ne sont pas traités par VitePress : on les copie tels quels dans le build
+  buildEnd: (siteConfig) => {
+    for (const f of glob.sync(['activites/**/*.json', 'umddv2/**/*.json'], { posix: true })) {
+      const dest = path.join(siteConfig.outDir, f)
+      mkdirSync(path.dirname(dest), { recursive: true })
+      copyFileSync(f, dest)
+    }
+  },
+
+  markdown: { math: true, config: (md) => { readmeLinksPlugin(md) } },
 
   themeConfig: {
     nav: [

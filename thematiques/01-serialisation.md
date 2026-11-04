@@ -36,6 +36,7 @@ Quel que soit le scénario choisi, il doit, pour cette thématique :
 - **Services attendus :** [Vitrine / état public](../activites/fil-rouge/services.md#cat-vitrine), [Passerelle / adaptateur](../activites/fil-rouge/services.md#cat-passerelle)
 - **Doit introduire :** au moins un type de donnée métier échangé entre nœuds, avec un schéma écrit et partagé
 - **Preuve attendue :** un message valide contre le schéma ; trois entrées hostiles (texte non JSON, champ manquant, type inconnu) ignorées proprement, sans plantage
+- **Exemple concret :** une vitrine complète (message JSON valide, schéma, trois entrées hostiles) dans [la fiche de stand du Festival](../activites/fil-rouge/libre/README.md#la-vitrine-la-fiche-de-stand)
 - **Décision à documenter :** le format choisi et la taille des messages, avec la raison (fallacy 3)
 
 ## Fil rouge
@@ -45,6 +46,6 @@ Quel que soit le scénario choisi, il doit, pour cette thématique :
 | UMDD       | [La vitrine](../activites/fil-rouge/umdd/vitrine.md)                  |
 | Powercher  | [Powercher](../activites/fil-rouge/powercher/README.md#serialisation) |
 | Pedaloland | [Mapping](../activites/fil-rouge/pedalo/README.md)                    |
-| Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) |
+| Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) ; exemple de [vitrine en JSON et son schéma](../activites/fil-rouge/libre/README.md#la-vitrine-la-fiche-de-stand) |
 
 Activité alternative : [Sérialise ma série](../activites/serial/README.md)
