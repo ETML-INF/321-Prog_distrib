@@ -20,6 +20,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [Sérialisation](../supports/Sérialisation.md)
 - [Contrat de base](../activites/contrats/README.md) (enveloppe et JSON Schema)
+- Slides : [Sérialisation](../slides/serialisation/)
 
 ## Drill
 - [D01 — Sérialisation : ça pèse combien, qu'est-ce qui casse ?](../activites/drills/D01-serialisation.md)

@@ -18,6 +18,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [Design for failure](../supports/design4failure.md)
 - [Kahoot P2P / design for failure](https://create.kahoot.it/share/p2p-et-resilience-des-reseaux/20a4a666-6729-4382-8a91-aa8eb8ec1984)
+- Slides : [Design for failure](../slides/design4failure/)
 
 ## Drill
 - [D07 — Retry : backoff et jitter aux dés](../activites/drills/D07-retry.md)

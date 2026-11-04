@@ -17,6 +17,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [Transaction](../supports/transaction.md)
+- Slides : [Transaction](../slides/transaction/)
 
 ## Drill
 - [D06 — Transaction : Fair Trade quand la banque plante](../activites/drills/D06-transaction.md)

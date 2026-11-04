@@ -82,5 +82,6 @@ export default withMermaid(defineConfig({
   },
 
   // Les liens du contenu sont écrits pour la navigation GitHub (ex: ../../umdd, hors site) : on ne bloque pas le build
-  ignoreDeadLinks: false,
+  // Les slides Slidev sont construits à part (dist/slides) : leurs liens ne sont pas des pages VitePress
+  ignoreDeadLinks: [/slides\//],
 }))

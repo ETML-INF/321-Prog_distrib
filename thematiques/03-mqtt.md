@@ -18,6 +18,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [MQTT](../supports/mqtt.md)
 - [Kahoot A](https://create.kahoot.it/share/mqtt/8545db98-717d-4ecb-9e2f-1349eb200161) · [Kahoot B](https://create.kahoot.it/details/c8177a44-0898-44e5-9c5b-4d72099a28be)
+- Slides : [MQTT](../slides/mqtt/)
 
 ## Drill
 - [D03 — MQTT : QoS, session, retain](../activites/drills/D03-qos-retain.md)
