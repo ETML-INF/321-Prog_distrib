@@ -35,6 +35,7 @@ Mesurer le coût réel d'un message, et constater qu'un changement de nom de cha
 
    Tableau de lecture : `82` = table de 2 entrées · `91` = tableau de 1 élément · `a0 + n` = texte de *n* octets · `cb` = nombre décimal sur 8 octets qui suit.  
    Table ASCII : `6e 61 6d 65` = `name`, `43` = `C`.  
+   💡 **Astuce** : n'additionnez pas les octets de tête. Collez ces octets dans un lecteur hexadécimal (ex. [CyberChef](https://gchq.github.io/CyberChef/) avec *From Hex*, `xxd -r -p | xxd`, ou un éditeur hexa comme HxD / l'extension *Hex Editor* de VS Code) : la colonne de droite affiche le texte ASCII et vous repérez `name`, `Chez L`, `specialties`… d'un coup d'œil. Les octets non imprimables (`82`, `a4`, `c3`…) apparaissent comme `.` : ce sont eux que le tableau de lecture vous aide à interpréter.  
    Retrouvez la valeur de `name` de la première table, puis l'octet qui dit « 9 octets de texte ».  
    → `a9` annonce 9 octets : `Chez Léa` (`4c c3 a9 61` = `L`, `é` sur 2 octets, `a`).
 
