@@ -33,7 +33,7 @@ Chaque thématique précise ce qu’un fil rouge doit y introduire (section « E
 
 ## Les 8 fallacies, fil rouge du module
 
-[Les 8 fallacies](../supports/fallacies.md) ([slides](../slides/fallacies/)) sont la grille de lecture de **toutes** les thématiques : chaque affirmation de l'entrepreneur du scénario en est une. Lisez chaque énoncé en demandant « de quelle croyance dépend-il ? ».
+[Les 8 fallacies](../supports/fallacies.md) ([slides](../slides/fallacies/){target="_self"}) sont la grille de lecture de **toutes** les thématiques : chaque affirmation de l'entrepreneur du scénario en est une. Lisez chaque énoncé en demandant « de quelle croyance dépend-il ? ».
 
 ## Outils transversaux
 

@@ -17,7 +17,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [Monitoring d'un système informatique complexe](../supports/monitoring.md)
-- Slides : [Monitoring](../slides/monitoring/)
+- Slides : [Monitoring](../slides/monitoring/){target="_self"}
 
 ## Drill
 - [D10 — Monitoring et énergie](../activites/drills/D10-monitoring-energie.md) (parties 1 et 2)
