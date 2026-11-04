@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "elchoco/chocolaterie",
+  "title": "Payload chocolaterie (maison de chocolat d'une famille du cartel)",
+  "type": "object",
+  "required": ["name", "zone", "capital", "capitalCity", "cacao", "bestProduct"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "minLength": 1, "description": "nom de la maison (ou de la famille)" },
+    "zone": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[1-9][0-9]{3}$" },
+      "description": "codes postaux suisses desservis (4 chiffres), en chaînes : un code postal n'est pas un nombre"
+    },
+    "capital": { "type": "integer", "minimum": 0, "description": "capital de la maison en CHF, entier (pas de flottant pour de l'argent)" },
+    "capitalCity": { "type": "string", "minLength": 1, "description": "ville du siège" },
+    "cacao": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["criollo", "trinitario", "forastero", "nacional"] },
+      "description": "types de cacao utilisés"
+    },
+    "bestProduct": { "type": "string", "minLength": 1, "description": "produit phare" },
+    "founded": { "type": "integer", "minimum": 1500, "maximum": 2100, "description": "année de fondation" },
+    "fairtrade": { "type": "boolean", "description": "cacao issu du commerce équitable" },
+    "logo": { "type": "string", "contentEncoding": "base64", "description": "image de l'emballage (≤ 20 Ko avant encodage)" }
+  }
+}

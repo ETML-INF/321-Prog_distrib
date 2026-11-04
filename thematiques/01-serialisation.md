@@ -46,6 +46,7 @@ Quel que soit le scénario choisi, il doit, pour cette thématique :
 | UMDD       | [La vitrine](../activites/fil-rouge/umdd/vitrine.md)                  |
 | Powercher  | [Powercher](../activites/fil-rouge/powercher/README.md#serialisation) |
 | Pedaloland | [Mapping](../activites/fil-rouge/pedalo/README.md)                    |
+| El Choco   | [La vitrine](../activites/fil-rouge/elchoco/vitrine.md)               |
 | Libre      | [Fil rouge libre](../activites/fil-rouge/libre/README.md) (à construire avec le [gabarit](../activites/fil-rouge/modele/README.md)) ; exemple de [vitrine en JSON et son schéma](../activites/fil-rouge/libre/README.md#la-vitrine-la-fiche-de-stand) |
 
 Activité alternative : [Sérialise ma série](../activites/serial/README.md)
