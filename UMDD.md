@@ -10,7 +10,7 @@ Il vante le résultat de son travail de la manière suivante :
 
 - Le réseau est fiable
 - Il n'y a aucune latence sur le réseau
-- Il offre une banque passante infinie
+- Il offre une bande passante infinie
 - Il est sûr
 - Sa topologie est si bonne qu'il n'y aura jamais besoin de changer quoique ce soit
 - Il n'a besoin que d'un seul administrateur (moi)
@@ -42,10 +42,18 @@ Avant de se lancer dans l'aventure, assurons-nous que nos bases sont solides.
 - Listes d'objets, retrouver un objet (Contains)
 - Constructeur (avec surcharge)
 - Propriétés
+- Décoration
 
 ### Activités
 
-(TBD)
+Drill OO:
+
+- Static
+- Propriété
+- Exception
+- Unit test
+- Collections
+- Constructeurs
 
 ## Thématique (Dé)Sérialisation
 
@@ -55,20 +63,11 @@ Pour cela, nous utiliserons la sérialisation.
 
 ### Activité
 
-Chacun crée un commerce: nom, enseigne (image), spécialité (nom + image + prix)Mise à disposition d'une base de code : une solution Windows Forms qui contient:
-
-- Un modèle `Business` pour le commerce
-- Un modèle `Specialty` pour la spécialité
-- Un formulaire `Store` qui est la vitrine de la boulangerie
-- Un formulaire `Billboard` qui affiche une `List<Business>`
-- La "plomberie" Mqtt:
-  - un agent qu'on instancie avec l'adresse IP du broker et le topic auquel ont souscrit
-  - une méthode qui permet d'envoyer des messages sur un topic
-  - une méthode appelée de manière asynchrone à la réception de message, cette méthode reçoit le topic complet en paramètres
-
-Afficher sa vitrine à partir de l'objet hardcodé
-Serialiser sa BP, la recharger à partir du du fichier et se débarrasser des valeurs hardcodées
-Récupérer les BP des autres, afficher plusieurs BP dans le Billboard
+- Théorie + Drill
+- Chacun crée un commerce: nom, enseigne (image), spécialité (nom + image + prix)
+- Chacun crée un programme qui permet d'afficher sa vitrine à partir d'un objet hardcodé
+- Serialiser sa BP, la recharger à partir du fichier et se débarrasser des valeurs hardcodées
+- Récupérer les BP des autres, afficher plusieurs BP
 
 DoD:
 
