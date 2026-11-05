@@ -1,10 +1,10 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import { glob } from 'glob'
-import { copyFileSync, mkdirSync } from 'fs'
 import path from 'path'
 import type MarkdownIt from 'markdown-it'
 import pkg from '../package.json'
+import { copyStatic, devPlugins } from './etml-vitepress'
 
 // Fail build when siteBase doesn't match the actual GitHub repo name (CI only)
 if (process.env.GITHUB_REPOSITORY) {
@@ -15,7 +15,12 @@ if (process.env.GITHUB_REPOSITORY) {
   }
 }
 
-process.env.VITE_EXTRA_EXTENSIONS = 'docx,pdf,pptx,zip,csv,xlsx,json'
+process.env.VITE_EXTRA_EXTENSIONS ??= 'docx,pdf,pptx,zip,csv,xlsx,json'
+
+// Fichiers non-markdown copiés tels quels (build) et servis tels quels (dev)
+const staticDirs = ['activites', 'umddv2', 'supports']
+const isStatic = (f: string) => !f.endsWith('~') && !f.endsWith('.md') && !/\/(bin|obj)\//.test(f)
+const etml = { siteBase: pkg.siteBase, staticDirs, isStatic }
 
 const repoUrl = process.env.GITHUB_REPOSITORY
   ? `https://github.com/${process.env.GITHUB_REPOSITORY}`
@@ -60,14 +65,10 @@ export default withMermaid(defineConfig({
     ':dir/:sub/:sub2/README.md': ':dir/:sub/:sub2/index.md',
   },
 
-  // Les .json (schémas, config) ne sont pas traités par VitePress : on les copie tels quels dans le build
-  buildEnd: (siteConfig) => {
-    for (const f of glob.sync(['activites/**/*.json', 'umddv2/**/*.json'], { posix: true })) {
-      const dest = path.join(siteConfig.outDir, f)
-      mkdirSync(path.dirname(dest), { recursive: true })
-      copyFileSync(f, dest)
-    }
-  },
+  vite: { plugins: devPlugins(etml) },
+
+  // Fichiers non-markdown (json, zip, pdf...) copiés tels quels dans le build
+  buildEnd: (c) => copyStatic(c.outDir, etml),
 
   markdown: { math: true, config: (md) => { readmeLinksPlugin(md) } },
 
@@ -111,5 +112,5 @@ export default withMermaid(defineConfig({
 
   // Les liens du contenu sont écrits pour la navigation GitHub (ex: ../../umdd, hors site) : on ne bloque pas le build
   // Les slides Slidev sont construits à part (dist/slides) : leurs liens ne sont pas des pages VitePress
-  ignoreDeadLinks: [/slides\//],
+  ignoreDeadLinks: [/slides\//, /\.(pdf|xlsx|docx|csv|pptx|zip|json)$/i],
 }))
