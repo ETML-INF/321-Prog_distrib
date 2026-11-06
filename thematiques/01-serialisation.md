@@ -28,6 +28,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Chat
 - [C1 — Hello chat](../activites/chat/C1-hello.md) : choisir son langage, envoyer et recevoir des messages valides
+- Laboratoire Docker : [procédure](../activites/infra/README.md) · télécharger [compose.yaml](../activites/infra/compose.yaml), [mosquitto.conf](../activites/infra/mosquitto.conf) et [toxiproxy.json](../activites/infra/toxiproxy.json)
 
 ## Exigences du fil rouge
 

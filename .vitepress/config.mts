@@ -15,7 +15,7 @@ if (process.env.GITHUB_REPOSITORY) {
   }
 }
 
-process.env.VITE_EXTRA_EXTENSIONS ??= 'docx,pdf,pptx,zip,csv,xlsx,json'
+process.env.VITE_EXTRA_EXTENSIONS ??= 'docx,pdf,pptx,zip,csv,xlsx,json,yaml,conf'
 
 // Fichiers non-markdown copiés tels quels (build) et servis tels quels (dev)
 const staticDirs = ['activites', 'umddv2', 'supports']
@@ -112,5 +112,5 @@ export default withMermaid(defineConfig({
 
   // Les liens du contenu sont écrits pour la navigation GitHub (ex: ../../umdd, hors site) : on ne bloque pas le build
   // Les slides Slidev sont construits à part (dist/slides) : leurs liens ne sont pas des pages VitePress
-  ignoreDeadLinks: [/slides\//, /\.(pdf|xlsx|docx|csv|pptx|zip|json)$/i],
+  ignoreDeadLinks: [/slides\//, /\.(pdf|xlsx|docx|csv|pptx|zip|json|yaml|conf)$/i],
 }))

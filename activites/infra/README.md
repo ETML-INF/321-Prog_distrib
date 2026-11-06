@@ -2,6 +2,14 @@
 
 Un hôte, un broker MQTT, un réseau que **vous** pouvez dégrader. Sert aux [drills](../drills/README.md), au [chat](../chat/README.md) et au [fil rouge](../fil-rouge/README.md).
 
+## Télécharger
+
+Placez ces trois fichiers dans le même dossier (`activites/infra`) :
+
+- [compose.yaml](./compose.yaml) : le laboratoire (broker + proxy)
+- [mosquitto.conf](./mosquitto.conf) : configuration du broker
+- [toxiproxy.json](./toxiproxy.json) : définition du proxy de pannes
+
 ## Démarrer
 
 ```bash
