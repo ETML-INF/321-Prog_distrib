@@ -24,11 +24,13 @@ MQTT offre plusieurs mécanismes pour assurer un service malgré des événement
 
 ### QoS
 
-| QoS | Garantie | Coût | Conséquence |
-|---|---|---|---|
-| 0 | au plus une fois, sans accusé | le plus léger | un message peut se perdre |
-| 1 | **au moins une fois** | un accusé (PUBACK) | un message peut arriver **en double** → idempotence ([Idempotence](idempotence.md)) |
-| 2 | exactement une fois | 4 messages d'échange | le plus lent |
+| QoS | Garantie                      | Coût                                            | Conséquence                                                                         |
+|-----|-------------------------------|-------------------------------------------------|-------------------------------------------------------------------------------------|
+| 0   | au plus une fois, sans accusé | 1 message  (PUBLISH)                            | un message peut se perdre                                                           |
+| 1   | **au moins une fois**         | 2 messages (PUBLISH + PUBACK)                   | un message peut arriver **en double** → idempotence ([Idempotence](idempotence.md)) |
+| 2   | exactement une fois           | 4 messages (PUBLISH + PUBREC + PUBREL + PUBCOMP | le plus lent                                                                        |
+
+*ACK=acknowledge, REC=received, REL=release, COMP=completed*
 
 Le QoS effectif d'une livraison est le **minimum** entre celui du publieur et celui de l'abonné.
 
