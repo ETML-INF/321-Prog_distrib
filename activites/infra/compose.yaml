@@ -6,17 +6,11 @@
 name: lab
 
 # Image des outils de temps : client/serveur NTP (chrony) et fausse horloge (faketime).
-# Construite une seule fois au premier démarrage du profil « temps ».
+# Construite une seule fois au premier démarrage du profil « temps » (horloge/Dockerfile).
 x-horloge: &horloge
   profiles: ["temps"]
   image: lab-horloge
-  build:
-    dockerfile_inline: |
-      FROM debian:12-slim
-      RUN apt-get update \
-       && apt-get install -y --no-install-recommends chrony faketime ca-certificates \
-       && rm -rf /var/lib/apt/lists/*
-      RUN printf 'local stratum 8\nallow all\n' > /etc/chrony/lab.conf
+  build: ./horloge   # voir horloge/Dockerfile
 
 services:
   # Serveur NTP du labo : sert l'heure de la machine hôte (il ne peut pas la modifier).
