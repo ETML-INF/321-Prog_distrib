@@ -32,7 +32,11 @@ MQTT offre plusieurs mécanismes pour assurer un service malgré des événement
 
 *ACK=acknowledge, REC=received, REL=release, COMP=completed*
 
-Les échanges entre un client qui publie et le broker, pour chaque niveau :
+QoS 2 : quatre messages entre le client qui publie et le broker.
+
+![Échange QoS 2 : PUBLISH, PUBREC, PUBREL, PUBCOMP](./assets/qos2.webp)
+
+<details><summary>Détail des échanges pour chaque niveau (QoS 0, 1, 2)</summary>
 
 ```mermaid
 sequenceDiagram
@@ -51,6 +55,8 @@ sequenceDiagram
     C->>B: PUBREL (id 8) : « c'est bon, oublie l'id 8 »
     B-->>C: PUBCOMP (id 8) : « oublié, échange terminé »
 ```
+
+</details>
 
 QoS 2 coûte deux allers-retours parce qu'il faut **mémoriser l'identifiant** du message le temps que les deux côtés soient sûrs : c'est ce qui permet d'écarter un renvoi. Le même échange a lieu, séparément, entre le broker et chaque abonné : d'où le QoS effectif ci-dessous.
 
