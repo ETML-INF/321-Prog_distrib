@@ -1,10 +1,39 @@
 # Laboratoire : un hôte, un broker, des pannes à la demande.
 #   docker compose up -d                       broker + proxy de pannes
+#   docker compose --profile temps up -d       + serveur NTP local et poste « horloge » (D02)
 #   docker compose --profile rabbitmq up -d    + RabbitMQ
 # Voir README.md pour les scénarios de panne.
 name: lab
 
+# Image des outils de temps : client/serveur NTP (chrony) et fausse horloge (faketime).
+# Construite une seule fois au premier démarrage du profil « temps ».
+x-horloge: &horloge
+  profiles: ["temps"]
+  image: lab-horloge
+  build:
+    dockerfile_inline: |
+      FROM debian:12-slim
+      RUN apt-get update \
+       && apt-get install -y --no-install-recommends chrony faketime ca-certificates \
+       && rm -rf /var/lib/apt/lists/*
+      RUN printf 'local stratum 8\nallow all\n' > /etc/chrony/lab.conf
+
 services:
+  # Serveur NTP du labo : sert l'heure de la machine hôte (il ne peut pas la modifier).
+  # Joignable depuis les autres conteneurs sous le nom « ntp ».
+  ntp:
+    <<: *horloge
+    command: ["chronyd", "-d", "-x", "-f", "/etc/chrony/lab.conf"]
+    restart: unless-stopped
+
+  # Poste de travail pour D02 : docker compose exec horloge bash
+  horloge:
+    <<: *horloge
+    command: ["sleep", "infinity"]
+    init: true
+    depends_on:
+      - ntp
+
   broker:
     image: eclipse-mosquitto:2
     ports:

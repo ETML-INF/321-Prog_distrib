@@ -28,9 +28,31 @@ MQTT offre plusieurs mécanismes pour assurer un service malgré des événement
 |-----|-------------------------------|-------------------------------------------------|-------------------------------------------------------------------------------------|
 | 0   | au plus une fois, sans accusé | 1 message  (PUBLISH)                            | un message peut se perdre                                                           |
 | 1   | **au moins une fois**         | 2 messages (PUBLISH + PUBACK)                   | un message peut arriver **en double** → idempotence ([Idempotence](idempotence.md)) |
-| 2   | exactement une fois           | 4 messages (PUBLISH + PUBREC + PUBREL + PUBCOMP | le plus lent                                                                        |
+| 2   | exactement une fois           | 4 messages (PUBLISH + PUBREC + PUBREL + PUBCOMP) | le plus lent                                                                        |
 
 *ACK=acknowledge, REC=received, REL=release, COMP=completed*
+
+Les échanges entre un client qui publie et le broker, pour chaque niveau :
+
+```mermaid
+sequenceDiagram
+    participant C as Client (publieur)
+    participant B as Broker
+    Note over C,B: QoS 0 : au plus une fois
+    C->>B: PUBLISH
+    Note over C,B: QoS 1 : au moins une fois
+    C->>B: PUBLISH (id 7)
+    B-->>C: PUBACK (id 7) : « reçu »
+    Note over C: sans PUBACK, renvoie le PUBLISH<br/>(→ doublon possible)
+    Note over C,B: QoS 2 : exactement une fois
+    C->>B: PUBLISH (id 8)
+    B-->>C: PUBREC (id 8) : « reçu, je retiens l'id 8 »
+    Note over B: un PUBLISH id 8 renvoyé<br/>est reconnu : pas de doublon
+    C->>B: PUBREL (id 8) : « c'est bon, oublie l'id 8 »
+    B-->>C: PUBCOMP (id 8) : « oublié, échange terminé »
+```
+
+QoS 2 coûte deux allers-retours parce qu'il faut **mémoriser l'identifiant** du message le temps que les deux côtés soient sûrs : c'est ce qui permet d'écarter un renvoi. Le même échange a lieu, séparément, entre le broker et chaque abonné : d'où le QoS effectif ci-dessous.
 
 Le QoS effectif d'une livraison est le **minimum** entre celui du publieur et celui de l'abonné.
 

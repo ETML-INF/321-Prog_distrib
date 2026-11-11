@@ -94,6 +94,26 @@ Le QoS effectif est le <b>minimum</b> entre celui du publieur et celui de l'abon
 
 ---
 
+# QoS 2 : l'échange en 4 temps
+
+```mermaid {scale: 0.7}
+sequenceDiagram
+    participant C as Client (publieur)
+    participant B as Broker
+    C->>B: PUBLISH (id 8)
+    B-->>C: PUBREC : « reçu, je retiens l'id 8 »
+    C->>B: PUBREL : « c'est bon, oublie l'id 8 »
+    B-->>C: PUBCOMP : « oublié, échange terminé »
+```
+
+<v-click>
+<div class="mt-4 p-3 bg-yellow-600 rounded text-yellow-200">
+Retenir l'identifiant permet d'écarter un PUBLISH renvoyé : <b>exactement une fois</b>, au prix de deux allers-retours.
+</div>
+</v-click>
+
+---
+
 # Session persistante
 
 <v-clicks>

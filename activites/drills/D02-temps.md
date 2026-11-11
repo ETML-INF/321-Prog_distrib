@@ -5,7 +5,7 @@
 | Thématique | [Temps](../../thematiques/02-temps.md) |
 | Fallacy | « tout le monde connaît l'heure » |
 | Durée | 35 min (+ 10 min pour la partie D, optionnelle) |
-| Matériel | Docker (aucune installation sur votre machine), papier, crayon |
+| Matériel | [labo Docker](../infra/README.md#temps-ntp-local-et-fausse-horloge) (profil `temps`, aucune installation sur votre machine), papier, crayon |
 | Théorie | [NTP](../../supports/ntp.md) : [NTP en pratique](../../supports/ntp.md#ntp-en-pratique) · [Alternative logique (Lamport)](../../supports/ntp.md#alternative-logique) |
 
 ## But
@@ -15,26 +15,37 @@ Voir qu'une horloge se trompe et dérive, calculer ce que NTP corrige, puis comp
 
 > Théorie : [Mettre les horloges à l'heure : NTP](../../supports/ntp.md) (strates, précision).
 
-**1. Ouvrez un conteneur** avec les deux outils du drill : `chrony` (client NTP) et `faketime` (fausse horloge pour un programme).
+**1. Démarrez le labo du temps et ouvrez le poste `horloge`.** Il contient les deux outils du drill : `chrony` (client NTP) et `faketime` (fausse horloge pour un programme). Le labo fournit aussi un serveur NTP local, nommé `ntp`.
 
 ```bash
-docker run --rm -it debian:12-slim bash
-# dans le conteneur (≈ 30 s) :
-apt-get update && apt-get install -y chrony faketime
+cd activites/infra
+docker compose --profile temps up -d     # 1re fois : construit l'image (≈ 1 min)
+docker compose exec horloge bash         # vous êtes maintenant dans le conteneur
 date -u +%Y-%m-%dT%H:%M:%SZ
 ```
+
+**Choisissez votre serveur de temps** (dans le conteneur) et gardez-le pour toute la partie A :
+
+| Option | Commande | Ce que vous verrez |
+|---|---|---|
+| **Distant** (Internet) | `S=ch.pool.ntp.org` | un vrai décalage de quelques ms, et un vrai délai réseau |
+| **Local** (tout dans Docker) | `S=ntp` | un décalage quasi nul : le serveur et vous lisez **la même horloge** (celle de l'hôte) |
+
+Le plus instructif : faites l'étape 2 avec les deux, puis continuez avec celle de votre choix.
 
 → Vous voyez par exemple `2026-11-11T10:31:44Z` : c'est le format **ISO 8601 en UTC** (le `Z` final) que le contrat du chat impose pour `ts` ([enveloppe](../contrats/README.md#enveloppe)).
 
 **2. Interrogez un serveur NTP** sans toucher à l'horloge (`-Q` = « mesurer seulement ») :
 
 ```bash
-chronyd -Q "server ch.pool.ntp.org iburst"
+chronyd -Q "server $S iburst"
 ```
 
-→ Après environ 5 s : `System clock wrong by -0.028046 seconds (ignored)`. Votre horloge est à quelques millisecondes de l'heure du serveur : c'est l'**offset** de la [théorie](../../supports/ntp.md#ntp-en-pratique), calculé avec quatre horodatages (partie B).
+→ Après quelques secondes :
+- distant : `System clock wrong by -0.028046 seconds (ignored)`. Votre horloge est à quelques millisecondes de celle du serveur : c'est l'**offset** de la [théorie](../../supports/ntp.md#ntp-en-pratique), calculé avec quatre horodatages (partie B) ;
+- local : `System clock wrong by 0.000002 seconds`. Deux conteneurs sur la même machine ne peuvent pas être en désaccord : pour voir un écart, il faudra le **fabriquer** (étape 3).
 
-> Aucune réponse au bout de 30 s ? Le réseau bloque probablement NTP (UDP 123). Prévenez l'enseignant et passez à l'étape 3 : `faketime` fonctionne sans réseau.
+> Distant sans réponse au bout de 30 s ? Le réseau bloque probablement NTP (UDP 123). Continuez avec `S=ntp`.
 
 **3. Essayez de changer l'heure** du conteneur :
 
@@ -46,7 +57,7 @@ date -s "2020-01-01 00:00:00"
 
 ```bash
 faketime -f "+30s" date -u +%Y-%m-%dT%H:%M:%SZ
-faketime -f "+30s" chronyd -Q "server ch.pool.ntp.org iburst"
+faketime -f "+30s" chronyd -Q "server $S iburst"
 ```
 
 → `date` affiche 30 s d'avance, et NTP le détecte : `System clock wrong by -30.03 seconds`. C'est exactement ce que fera l'option `--clock-skew 30` de votre chat ([C2](../chat/C2-ordre.md)).
@@ -54,7 +65,7 @@ faketime -f "+30s" chronyd -Q "server ch.pool.ntp.org iburst"
 **4. Observez une dérive.** Une horloge ne fait pas que se tromper, elle **dérive** : elle avance un peu trop vite ou trop lentement. Simulez une horloge 1 % trop rapide et mesurez trois fois, à 20 s d'intervalle :
 
 ```bash
-faketime -f "+0 x1.01" bash -c 'for i in 1 2 3; do chronyd -Q "server ch.pool.ntp.org iburst" 2>&1 | grep wrong; sleep 20; done'
+faketime -f "+0 x1.01" bash -c "for i in 1 2 3; do chronyd -Q 'server $S iburst' 2>&1 | grep wrong; sleep 20; done"
 ```
 
 → Le décalage grandit à chaque mesure (par exemple −0,05 s, −0,17 s, −0,27 s). À ce rythme, combien d'écart après une heure ?
@@ -64,7 +75,7 @@ faketime -f "+0 x1.01" bash -c 'for i in 1 2 3; do chronyd -Q "server ch.pool.nt
 1 % de 3600 s = **36 s par heure**. Un vrai quartz dérive bien moins (10 à 50 millionièmes, soit quelques secondes par jour), mais il dérive toujours : une seule synchronisation ne suffit pas, il faut **resynchroniser régulièrement**. Pour votre fil rouge, c'est la question de la *fréquence de diffusion* de l'heure.
 </details>
 
-Quittez le conteneur : `exit` (il est supprimé grâce à `--rm`).
+Quittez le conteneur : `exit`. Le labo continue de tourner (`docker compose --profile temps down` pour tout arrêter).
 
 > **Optionnel, sur votre machine.** Windows : `w32tm /stripchart /computer:ch.pool.ntp.org /samples:3 /dataonly` (colonne `offset`). Linux / macOS : `sntp ch.pool.ntp.org`.
 

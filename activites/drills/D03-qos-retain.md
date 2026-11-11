@@ -42,7 +42,7 @@ function DC { docker compose exec broker @args }
 
 > **Git Bash sous Windows** : si une commande `docker compose exec` se plaint d'un chemin `C:/Program Files/Git/...`, faites d'abord `export MSYS_NO_PATHCONV=1`.
 
-**Contrôle** : dans `T3` lancez `DC mosquitto_sub -t 'lab/#' -v` (il reste ouvert : `lab/#` = tout ce qui commence par `lab/`). Dans `T2` : `DC mosquitto_pub -t lab/test -m ok`. Vous devez voir `lab/test ok` dans `T3`. Si oui, le labo marche.
+**Contrôle** : dans `T3` lancez `DC mosquitto_sub -t 'lab/#' -v` (il reste ouvert : `lab/#` = tout ce qui commence par `lab/`, voir [Wildcards](../../supports/mqtt.md#utilisation-des-wildcards)). Dans `T2` : `DC mosquitto_pub -t lab/test -m ok`. Vous devez voir `lab/test ok` dans `T3`. Si oui, le labo marche.
 
 Les options des commandes ci-dessous :
 
@@ -56,6 +56,8 @@ Les options des commandes ci-dessous :
 | `-r` | **retain** : le broker garde le dernier message du topic |
 
 ## 1. Prédire (5 min, avant de toucher au clavier)
+
+> Théorie : [QoS](../../supports/mqtt.md#qos) · [Session persistante](../../supports/mqtt.md#session-persistante) · [Retained Messages](../../supports/mqtt.md#retained-messages-messages-conserves)
 
 Alice publie **pendant que Bob est déconnecté**. Complétez avec *reçoit / ne reçoit pas* :
 
@@ -85,6 +87,8 @@ sequenceDiagram
 
 ### Cas A : QoS 0, session persistante
 
+> Théorie : [QoS](../../supports/mqtt.md#qos) (« au plus une fois ») · [Session persistante](../../supports/mqtt.md#session-persistante) (les messages QoS 0 ne sont pas conservés)
+
 1. `T1` : `DC mosquitto_sub -i bob -c -q 0 -t lab/a -W 2`  
    → `Timed out` après 2 s : normal, personne n'a publié. Bob est abonné, puis il se déconnecte.
 2. `T2` : `DC mosquitto_pub -q 0 -t lab/a -m un`  
@@ -93,6 +97,8 @@ sequenceDiagram
    → **rien** (`Timed out`) : le message QoS 0 est perdu.
 
 ### Cas B : QoS 1, session persistante
+
+> Théorie : [QoS](../../supports/mqtt.md#qos) (« au moins une fois ») · [Session persistante](../../supports/mqtt.md#session-persistante)
 
 Mêmes étapes, autre topic (`lab/b`). **À vous de les faire dans l'ordre : `T1` (s'abonner), `T2` (publier), `T1` (revenir).** Première commande :
 
@@ -108,6 +114,8 @@ Mêmes étapes, autre topic (`lab/b`). **À vous de les faire dans l'ordre : `T1
 
 ### Cas C : QoS 1, session propre
 
+> Théorie : [Session persistante](../../supports/mqtt.md#session-persistante) (sans elle, rien n'est gardé)
+
 Même chose sur `lab/c`, mais **sans `-c`** (le broker oublie Bob dès qu'il part) :
 
 7. `T1` : `DC mosquitto_sub -i bob -q 1 -t lab/c -W 2`
@@ -117,12 +125,16 @@ Même chose sur `lab/c`, mais **sans `-c`** (le broker oublie Bob dès qu'il par
 
 ### Cas D : retain
 
+> Théorie : [Retained Messages](../../supports/mqtt.md#retained-messages-messages-conserves)
+
 10. `T2` : `DC mosquitto_pub -q 0 -r -t lab/d -m quatre`
 11. `T1` (Bob arrive *après*, session propre) : `DC mosquitto_sub -t lab/d -C 1 -W 3 -v`  
     → `lab/d quatre` **immédiatement** : le broker avait gardé le dernier message du topic.
 12. Effacez le message retenu : `DC mosquitto_pub -r -n -t lab/d`
 
 ## 3. Dégrader le réseau (fallacy 2)
+
+> Théorie : [Fallacy 2 — la latence est nulle](../../supports/fallacies.md#fallacy-2) · [QoS](../../supports/mqtt.md#qos) (le schéma des échanges : chaque accusé est un aller-retour de plus)
 
 Le proxy de pannes (port `1884`) permet d'ajouter de la latence. Chronométrez d'abord une publication **sans** panne, puis **avec**.
 
