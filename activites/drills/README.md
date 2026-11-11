@@ -15,7 +15,7 @@ Un drill réussi = vous pouvez expliquer à voix haute **ce qui s'est passé et 
 | Drill | Thématique | Thème | Fallacy | Format |
 |---|---|---|---|---|
 | [D01](D01-serialisation.md) | [Sérialisation](../../thematiques/01-serialisation.md) | Sérialisation : combien ça pèse, qu'est-ce qui casse | 3, 8 | papier + validateur |
-| [D02](D02-temps.md) | [Temps](../../thematiques/02-temps.md) | Temps : trier des messages quand les horloges mentent | heure | papier |
+| [D02](D02-temps.md) | [Temps](../../thematiques/02-temps.md) | Temps : trier des messages quand les horloges mentent | heure | Docker, papier |
 | [D03](D03-qos-retain.md) | [MQTT](../../thematiques/03-mqtt.md) | MQTT : QoS, session, retain | 1, 2 | CLI |
 | [D04](D04-mort-noeud.md) | [Microservices](../../thematiques/04-microservices.md) | Mort d'un nœud : LWT et keep-alive | 1, 5 | CLI + pannes |
 | [D05](D05-idempotence.md) | [Idempotence](../../thematiques/05-idempotence.md) | Idempotence : le solde après les doublons | 1 | papier |

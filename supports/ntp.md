@@ -54,7 +54,7 @@ sequenceDiagram
 L'offset suppose que l'aller et le retour durent autant. Le *delay* ne corrige pas l'horloge : il mesure la **confiance** que l'on peut avoir dans l'offset. Plus il est grand, plus l'erreur possible (jusqu'à `delay / 2`) l'est aussi, et un client NTP peut ignorer ou retarder une correction faite dans de mauvaises conditions.
 
 **Exemple.** `T2 − T1 = +5 ms` (le serveur semble 5 ms en avance à l'aller), `T3 − T4 = −3 ms` (au retour, 3 ms en retard) : offset = (5 − 3) / 2 = **+1 ms**.  
-Autre exemple chiffré : voir [D02](../activites/drills/D02-temps.md) (décalage de 4 s, délai de 0,102 s).
+Autre exemple chiffré : voir [D02](../activites/drills/D02-temps.md) (décalage de 3 s, délai de 0,102 s).
 
 **Astuce de calcul.** Convertir toutes les dates en *timestamps* (millisecondes depuis l'époque Unix, 1er janvier 1970 UTC) : plus de fuseaux, de formats ou d'unités à jongler. Transmettre et stocker en UTC, ne convertir qu'à l'affichage.
 
