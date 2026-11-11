@@ -20,7 +20,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [Sérialisation](../supports/Sérialisation.md)
 - [Contrat de base](../activites/contrats/README.md) (enveloppe et JSON Schema)
-- Slides : [Sérialisation](../slides/serialisation/){target="_self"}
+- Slides : [Sérialisation](../slides/serialisation/){target="_blank"}
 - Kahoot : [Kahoot sur la sérialisation](https://create.kahoot.it/share/serialisation-formats-echanges-et-securite/5ad52a20-9bb4-4040-b675-11263ed36e92)
 
 ## Drill

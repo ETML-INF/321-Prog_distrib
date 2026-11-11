@@ -7,6 +7,7 @@
 | Durée | 35 min (+ 10 min pour la partie D, optionnelle) |
 | Matériel | [labo Docker](../infra/README.md#temps-ntp-local-et-fausse-horloge) (profil `temps`, aucune installation sur votre machine), papier, crayon |
 | Théorie | [NTP](../../supports/ntp.md) : [NTP en pratique](../../supports/ntp.md#ntp-en-pratique) · [Alternative logique (Lamport)](../../supports/ntp.md#alternative-logique) |
+| Doc des outils | [`chronyd`](https://manpages.debian.org/bookworm/chrony/chronyd.8.en.html) (option `-Q`) · [`chrony.conf`](https://manpages.debian.org/bookworm/chrony/chrony.conf.5.en.html) (directive `server`, option `iburst`) · [`faketime`](https://manpages.debian.org/bookworm/faketime/faketime.1.en.html) · [`date`](https://manpages.debian.org/bookworm/coreutils/date.1.en.html) |
 
 ## But
 Voir qu'une horloge se trompe et dérive, calculer ce que NTP corrige, puis comprendre pourquoi trier un chat sur l'heure locale reste fragile.
@@ -35,15 +36,30 @@ Le plus instructif : faites l'étape 2 avec les deux, puis continuez avec celle 
 
 → Vous voyez par exemple `2026-11-11T10:31:44Z` : c'est le format **ISO 8601 en UTC** (le `Z` final) que le contrat du chat impose pour `ts` ([enveloppe](../contrats/README.md#enveloppe)).
 
+> 💡 **Lire la commande `date`.** `-u` = afficher en UTC (pas l'heure suisse). `+…` = format de sortie : `%Y` année, `%m` mois, `%d` jour, `%H:%M:%S` heure ; `T` et `Z` sont recopiés tels quels. Comparez avec `date` tout court.
+
 **2. Interrogez un serveur NTP** sans toucher à l'horloge (`-Q` = « mesurer seulement ») :
 
 ```bash
 chronyd -Q "server $S iburst"
 ```
 
+> 💡 **Comprendre la commande** ([doc `chronyd`](https://manpages.debian.org/bookworm/chrony/chronyd.8.en.html), [doc `server`](https://manpages.debian.org/bookworm/chrony/chrony.conf.5.en.html)) :
+>
+> | Morceau | Rôle |
+> |---|---|
+> | `chronyd` | le **démon** (service de fond) NTP de chrony. D'habitude, il tourne en permanence et corrige l'horloge petit à petit |
+> | `-Q` | mode **« mesurer une fois »** : interroge le serveur, affiche l'écart, **ne corrige rien**, puis s'arrête. (`-q` corrigerait une fois : refusé dans le conteneur, comme `date -s` à l'étape 3) |
+> | `"server $S iburst"` | une ligne de configuration donnée directement, à la place du fichier `chrony.conf` : « prends `$S` comme serveur de temps » |
+> | `iburst` | *initial burst* : au démarrage, envoie une **rafale** de requêtes rapprochées (≈ toutes les 2 s) au lieu d'attendre l'intervalle normal entre deux requêtes (64 s au minimum, jusqu'à ≈ 17 min). Mesuré dans le labo : ≈ 5 s avec `iburst`, ≈ 130 s sans (curieux ? essayez `chronyd -Q "server ntp"`) |
+>
+> Pourquoi plusieurs requêtes ? Chacune donne un décalage et un délai (partie B) ; chrony garde les échantillons au **plus petit délai**, donc les plus fiables.
+
+**Lire le résultat.** `System clock wrong by X seconds` : `X` est le décalage que chrony **devrait** appliquer à votre horloge. **Négatif = votre horloge avance**, positif = elle retarde (même convention que l'*offset* de la [théorie](../../supports/ntp.md#ntp-en-pratique)). `(ignored)` rappelle que `-Q` n'a rien corrigé.
+
 → Après quelques secondes :
 - distant : `System clock wrong by -0.028046 seconds (ignored)`. Votre horloge est à quelques millisecondes de celle du serveur : c'est l'**offset** de la [théorie](../../supports/ntp.md#ntp-en-pratique), calculé avec quatre horodatages (partie B) ;
-- local : `System clock wrong by 0.000002 seconds`. Deux conteneurs sur la même machine ne peuvent pas être en désaccord : pour voir un écart, il faudra le **fabriquer** (étape 3).
+- local : `System clock wrong by -0.000000 seconds (ignored)`. Deux conteneurs sur la même machine ne peuvent pas être en désaccord : pour voir un écart, il faudra le **fabriquer** (étape 3).
 
 > Distant sans réponse au bout de 30 s ? Le réseau bloque probablement NTP (UDP 123). Continuez avec `S=ntp`.
 
@@ -60,7 +76,16 @@ faketime -f "+30s" date -u +%Y-%m-%dT%H:%M:%SZ
 faketime -f "+30s" chronyd -Q "server $S iburst"
 ```
 
-→ `date` affiche 30 s d'avance, et NTP le détecte : `System clock wrong by -30.03 seconds`. C'est exactement ce que fera l'option `--clock-skew 30` de votre chat ([C2](../chat/C2-ordre.md)).
+→ `date` affiche 30 s d'avance, et NTP le détecte : `System clock wrong by -30.03 seconds` (négatif : l'horloge **avance**). C'est exactement ce que fera l'option `--clock-skew 30` de votre chat ([C2](../chat/C2-ordre.md)).
+
+> 💡 **Comment `faketime` triche** ([doc](https://manpages.debian.org/bookworm/faketime/faketime.1.en.html)). Il charge une petite bibliothèque *avant* le programme lancé (mécanisme `LD_PRELOAD`) ; chaque fois que ce programme demande l'heure au système, la bibliothèque répond avec l'heure truquée. Seuls ce programme et ses enfants sont trompés : l'horloge du noyau, elle, ne bouge pas (vérifiez avec un `date` seul juste après).
+>
+> Formats utiles pour `-f` : `"+30s"` / `"-3s"` (décalage), `"@2026-11-02 08:00:00"` (date fixe de départ), `"+0 x1.01"` (décalage 0, mais le temps passe 1,01 fois plus vite : étape 4).
+
+<details><summary>Indice : pourquoi −30,03 et pas −30 tout rond ?</summary>
+
+Il y a deux écarts qui s'additionnent : les 30 s fabriquées par `faketime`, et le petit décalage réel mesuré à l'étape 2 (quelques ms en distant, ≈ 0 en local).
+</details>
 
 **4. Observez une dérive.** Une horloge ne fait pas que se tromper, elle **dérive** : elle avance un peu trop vite ou trop lentement. Simulez une horloge 1 % trop rapide et mesurez trois fois, à 20 s d'intervalle :
 
@@ -68,7 +93,18 @@ faketime -f "+30s" chronyd -Q "server $S iburst"
 faketime -f "+0 x1.01" bash -c "for i in 1 2 3; do chronyd -Q 'server $S iburst' 2>&1 | grep wrong; sleep 20; done"
 ```
 
+> 💡 **Lire la commande.**
+> - `bash -c "…"` lance toute la boucle **sous** `faketime` : chaque `chronyd` (et chaque `sleep`) voit la même horloge accélérée, qui accumule de l'avance d'une mesure à l'autre.
+> - `for i in 1 2 3; do … ; done` : trois mesures.
+> - `2>&1 | grep wrong` : chronyd écrit ses messages sur la sortie d'erreur (`2`) ; on la redirige vers la sortie normale (`1`) pour que `grep` ne garde que la ligne `System clock wrong by…`.
+> - `sleep 20` : laisse l'avance s'accumuler entre deux mesures.
+
 → Le décalage grandit à chaque mesure (par exemple −0,05 s, −0,17 s, −0,27 s). À ce rythme, combien d'écart après une heure ?
+
+<details><summary>Indice</summary>
+
+`x1.01` : pendant que le vrai temps avance d'une seconde, la fausse horloge avance de 1,01 s. Combien d'avance prend-elle par seconde ? Multipliez par le nombre de secondes dans une heure.
+</details>
 
 <details><summary>Réponse</summary>
 
@@ -97,6 +133,12 @@ sequenceDiagram
 Formules : `décalage = ((T2 − T1) + (T3 − T4)) / 2` et `délai = (T4 − T1) − (T3 − T2)`.
 
 Début du calcul : `T2 − T1 = 13,050 − 10,000 = 3,050`. À vous : `T3 − T4`, le décalage, puis le délai.
+
+<details><summary>Indice</summary>
+
+- Délai : `T4 − T1` est le temps total vu par Carl ; `T3 − T2` est le temps que le serveur a passé à répondre. La différence, c'est le temps passé **sur le réseau**.
+- Signe du décalage : positif = Carl est **en retard** sur le serveur (voir [NTP en pratique](../../supports/ntp.md#ntp-en-pratique)). C'est ce même chiffre que `chronyd -Q` affichait à l'étape 2.
+</details>
 
 <details><summary>Réponse</summary>
 
@@ -140,6 +182,11 @@ sequenceDiagram
 
 Lisez le chat dans cet ordre : que remarquez-vous à propos de m3 ?
 
+<details><summary>Indice</summary>
+
+Ne regardez **que** la colonne `ts` écrit : c'est la seule information dont dispose le chat. L'heure réelle est cachée à tout le monde.
+</details>
+
 <details><summary>Réponse</summary>
 
 Ordre : m3, m1, m4, m2 / m6 (égalité), m5.
@@ -151,6 +198,12 @@ La réponse de Carl (m3) s'affiche **avant** la question de Bob (m2) : le tri su
 - `2026-11-02T08:00:10Z`
 - `2026-11-02T08:00:10.5Z`
 - `2026-11-02T09:00:05+01:00`
+
+<details><summary>Indice</summary>
+
+- Texte : on compare caractère par caractère, de gauche à droite, jusqu'au premier qui diffère. Ordre des caractères (ASCII) : `+` < `.` < chiffres < `Z`.
+- Instant : `+01:00` veut dire « heure locale 1 h **en avance** sur UTC ». Pour revenir en UTC, on **retire** 1 h.
+</details>
 
 <details><summary>Réponse</summary>
 
@@ -187,6 +240,11 @@ Règles : chaque machine a un compteur à 0.
 | m5 | B envoie | ? | ? |
 | (réception de m5) | C reçoit | ? | ? |
 | m6 | C envoie | ? | ? |
+
+<details><summary>Indice</summary>
+
+Le compteur d'une machine **garde sa valeur** entre deux messages : après m1, celui de A vaut 1 (pas 0). Pour C, partez de la valeur après m3.
+</details>
 
 <details><summary>Réponse</summary>
 

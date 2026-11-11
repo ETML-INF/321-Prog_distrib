@@ -22,7 +22,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 - [Microservices](../supports/microservice.md)
 - [Récap Kahoot NTP, sérialisation, microservices](https://create.kahoot.it/share/ntp-serialisation-et-microservice/1fdb114c-757c-4d9f-9fa5-b1310f47c90e)
 - Rappel MQTT : [LWT](../supports/mqtt.md#last-will-and-testament-lwt) et [Keep-Alive](../supports/mqtt.md#keep-alive)
-- Slides : [Microservices](../slides/microservice/){target="_self"}
+- Slides : [Microservices](../slides/microservice/){target="_blank"}
 
 ## Drill
 - [D04 — Mort d'un nœud : LWT et keep-alive](../activites/drills/D04-mort-noeud.md)

@@ -19,8 +19,8 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 - [Cluster, load balancing, failover](../supports/cluster.md)
 - [P2P](../supports/P2P.md)
 - [Kahoot P2P / design for failure](https://create.kahoot.it/share/p2p-et-resilience-des-reseaux/20a4a666-6729-4382-8a91-aa8eb8ec1984)
-- Slides : [Cluster](../slides/cluster/){target="_self"}
-- Slides : [P2P](../slides/P2P/){target="_self"}
+- Slides : [Cluster](../slides/cluster/){target="_blank"}
+- Slides : [P2P](../slides/P2P/){target="_blank"}
 
 ## Drill
 - [D08 — Cluster : qui répond ?](../activites/drills/D08-cluster.md)

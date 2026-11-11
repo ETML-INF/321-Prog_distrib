@@ -22,9 +22,9 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 - [Confidentialité](../supports/confidentialite.md)
 - [Réseau de confiance](../supports/reseau-confiance.md)
 - [Kahoot confidentialité / confiance](https://create.kahoot.it/share/321-confidentialite-confiance/9fdf010f-682c-42c5-bc7e-2188d553bebd)
-- Slides : [Sécurité](../slides/securite/){target="_self"}
-- Slides : [Confidentialité](../slides/confidentialite/){target="_self"}
-- Slides : [Réseau de confiance](../slides/reseau-confiance/){target="_self"}
+- Slides : [Sécurité](../slides/securite/){target="_blank"}
+- Slides : [Confidentialité](../slides/confidentialite/){target="_blank"}
+- Slides : [Réseau de confiance](../slides/reseau-confiance/){target="_blank"}
 
 ## Drill
 - [D09 — Sécurité : signature, chiffrement, rejeu](../activites/drills/D09-securite.md)

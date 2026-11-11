@@ -17,7 +17,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [Puissance et énergie](../supports/Puissance%20et%20énergie.md)
 - [Kahoot récap](https://create.kahoot.it/details/869bfcbc-6e29-414a-82eb-8764bef04efd)
-- Slides : [Puissance et énergie](../slides/puissance-energie/){target="_self"}
+- Slides : [Puissance et énergie](../slides/puissance-energie/){target="_blank"}
 
 ## Drill
 - [D10 — Monitoring et énergie](../activites/drills/D10-monitoring-energie.md) (partie 3)

@@ -19,7 +19,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [Idempotence](../supports/idempotence.md)
 - [Kahoot](https://create.kahoot.it/details/af92797e-3495-40b3-8a37-ae8d9d5bfbf9)
-- Slides : [Idempotence](../slides/idempotence/){target="_self"}
+- Slides : [Idempotence](../slides/idempotence/){target="_blank"}
 
 ## Drill
 - [D05 — Idempotence : le solde après les doublons](../activites/drills/D05-idempotence.md)
