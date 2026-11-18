@@ -8,6 +8,7 @@ Découper en services qui se parlent par messages, chacun avec son équipe et so
 - décrire le rôle d'un microservice et ce que lui coûte un voisin défaillant
 - annoncer sa mort avec un LWT et expliquer le délai de détection d'une mort silencieuse
 - co-écrire un contrat de service avec d'autres équipes
+- valider un message contre son schéma et refuser (ignorer, logger, compter) un message non conforme
 - implémenter un service d'annuaire et un service de journal
 
 **Fallacies :**
@@ -20,6 +21,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 
 ## Théorie
 - [Microservices](../supports/microservice.md)
+- [Valider à la frontière](../supports/microservice.md#valider-a-la-frontiere)
 - [Récap Kahoot NTP, sérialisation, microservices](https://create.kahoot.it/share/ntp-serialisation-et-microservice/1fdb114c-757c-4d9f-9fa5-b1310f47c90e)
 - Rappel MQTT : [LWT](../supports/mqtt.md#last-will-and-testament-lwt) et [Keep-Alive](../supports/mqtt.md#keep-alive)
 - Slides : [Microservices](../slides/microservice/){target="_blank"}
@@ -36,7 +38,7 @@ Quel que soit le scénario choisi, il doit, pour cette thématique :
 
 - **Services attendus :** [Annuaire](../activites/fil-rouge/services.md#cat-annuaire), [Journal](../activites/fil-rouge/services.md#cat-journal)
 - **Doit introduire :** au moins deux services indépendants qui se découvrent via le bus, et un nœud qui annonce sa propre mort (LWT)
-- **Preuve attendue :** un nœud tué est retiré de la liste des vivants en moins de 10 s
+- **Preuve attendue :** un nœud tué est retiré de la liste des vivants en moins de 10 s ; un message invalide injecté à la main est ignoré, loggé et compté
 - **Décision à documenter :** le keep-alive choisi et son coût (fallacy 7)
 
 ## Fil rouge

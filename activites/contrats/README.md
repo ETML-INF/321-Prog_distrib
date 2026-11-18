@@ -49,6 +49,7 @@ Exemple :
 
 1. Un message qui ne valide pas contre son schéma est **ignoré et loggé**. Il ne fait jamais planter un service.
 2. On est **strict en émission, tolérant en réception** : un champ inconnu dans un payload est ignoré, un champ obligatoire absent rend le message invalide.
+   - Les payloads des types du noyau (`chat`, `presence`, `time`, `log`) et l'enveloppe ont `additionalProperties: false` : un champ inconnu y rend le message invalide. La tolérance vaut pour les **types inconnus** (règle 4, ignorés et loggés) et pour les types d'un scénario dont le schéma n'interdit pas les champs supplémentaires.
 3. Un nœud ne publie que sous son propre nom (`from`), jusqu'à ce que la thématique Sécurité nous donne le moyen de le prouver.
 4. Un `type` pour lequel le nœud n'a pas de schéma est **ignoré et loggé**, comme un message invalide : le `type` est extensible, et sur un broker partagé vous recevrez des types d'autres scénarios.
 

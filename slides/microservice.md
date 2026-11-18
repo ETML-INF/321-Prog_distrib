@@ -24,8 +24,9 @@ mdc: true
 1. **Définition** - services indépendants
 2. **Communication** - UDP, TCP, HTTP, bus de messages
 3. **Contrat** - le langage commun
-4. **Bilan** - avantages et inconvénients
-5. **Fallacies associées** - le piège et comment l'éviter
+4. **Valider à la frontière** - refuser un message non conforme
+5. **Bilan** - avantages et inconvénients
+6. **Fallacies associées** - le piège et comment l'éviter
 
 ---
 layout: image
@@ -138,6 +139,70 @@ layout: section
 ---
 
 # Partie 4
+## Valider à la frontière
+
+---
+
+# Valider à la réception
+
+<v-clicks>
+
+- Le broker transporte des octets : il ne connaît pas le contrat
+- La garde est **chez le récepteur**, avant tout usage du payload
+- Deux temps : le message contre `envelope`, puis le `payload` contre le schéma de son `type`
+- Invalide : **ignorer, logger, compter** dans `bad`. Jamais planter
+
+</v-clicks>
+
+---
+
+# Piège : `format` ne valide rien par défaut
+
+<v-click>
+<div class="mt-1 p-3 bg-red-700 rounded text-red-100">
+<b>Ce qui arrive :</b> <code>"format":"uuid"</code> accepte n'importe quelle chaîne : <code>id:"nope"</code> est déclaré valide.
+</div>
+</v-click>
+
+<v-click>
+<div class="mt-2 p-3 bg-green-700 rounded text-green-200">
+<b>Mieux faire :</b> Activer l'assertion de format (Ajv : <code>ajv-formats</code>, JsonSchema.Net : <code>RequireFormatValidation</code>).
+</div>
+</v-click>
+
+<v-click>
+<div class="mt-2 p-3 bg-blue-800 rounded text-blue-100">
+<b>Exemple :</b> Sans l'option, <code>{"id":"nope"}</code> passe ; avec, il est refusé.
+</div>
+</v-click>
+
+---
+
+# Piège : le testament est figé
+
+<v-click>
+<div class="mt-1 p-3 bg-red-700 rounded text-red-100">
+<b>Ce qui arrive :</b> Le LWT est préparé à la connexion : son <code>id</code> et son <code>ts</code> sont périmés quand il part. Valide, mais faux.
+</div>
+</v-click>
+
+<v-click>
+<div class="mt-2 p-3 bg-green-700 rounded text-green-200">
+<b>Mieux faire :</b> Ne pas se fier au <code>ts</code> d'un testament, ne pas dédoublonner sur son <code>id</code>.
+</div>
+</v-click>
+
+<v-click>
+<div class="mt-2 p-3 bg-blue-800 rounded text-blue-100">
+<b>Exemple :</b> Alice meurt à 09:40, son testament porte <code>ts</code> de 08:15 : le schéma l'accepte, mais l'heure ne dit rien sur la mort.
+</div>
+</v-click>
+
+---
+layout: section
+---
+
+# Partie 5
 ## Bilan
 
 ---
@@ -242,7 +307,7 @@ layout: section
 
 <v-click>
 <div class="mt-2 p-3 bg-green-700 rounded text-green-200">
-<b>Mieux faire :</b> Format ouvert, contrat écrit (JSON Schema), dates en ISO 8601 UTC, versionner, ne jamais renommer un champ sans prévenir.
+<b>Mieux faire :</b> Format ouvert, contrat écrit (JSON Schema) <b>validé à la réception</b>, dates en ISO 8601 UTC, versionner, ne jamais renommer un champ sans prévenir.
 </div>
 </v-click>
 
