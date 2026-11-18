@@ -54,13 +54,28 @@ services:
     profiles: ["rabbitmq"]
     image: rabbitmq:4.0-management
     ports:
-      - "5672:5672"
-      - "1885:1883"   # MQTT RabbitMQ, décalé pour ne pas entrer en conflit
-      - "15672:15672" # console http://localhost:15672
+      # Ports hôte surchargeables (.env ou variable d'environnement), repris dans la bannière.
+      - "${RMQ_AMQP_PORT:-5672}:5672"
+      - "${RMQ_MQTT_PORT:-1885}:1883"      # MQTT RabbitMQ, décalé pour ne pas entrer en conflit
+      - "${RMQ_CONSOLE_PORT:-15672}:15672" # console web
+      - "${RMQ_WS_PORT:-15675}:15675"      # MQTT sur WebSocket
     environment:
-      RABBITMQ_DEFAULT_USER: ict
-      RABBITMQ_DEFAULT_PASS: "321"
-    command: >
-      /bin/bash -c "rabbitmq-plugins enable --offline rabbitmq_mqtt;
-      rabbitmq-server"
+      RABBITMQ_DEFAULT_USER: ${RMQ_USER:-ict}
+      RABBITMQ_DEFAULT_PASS: ${RMQ_PASS:-321}
+    # Logs réduits aux avertissements (sinon le démarrage est très verbeux) + bannière des ports.
+    command:
+      - /bin/bash
+      - -c
+      - |
+        rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_web_mqtt > /dev/null
+        echo "log.console.level = warning" > /etc/rabbitmq/conf.d/20-lab.conf
+        cat <<'EOF'
+        ==================== RabbitMQ (user ${RMQ_USER:-ict} / mdp ${RMQ_PASS:-321}) ====================
+          AMQP            localhost:${RMQ_AMQP_PORT:-5672}
+          MQTT            localhost:${RMQ_MQTT_PORT:-1885}
+          MQTT/WebSocket  ws://localhost:${RMQ_WS_PORT:-15675}/ws
+          Console web     http://localhost:${RMQ_CONSOLE_PORT:-15672}
+        =======================================================================
+        EOF
+        exec rabbitmq-server
     restart: on-failure
