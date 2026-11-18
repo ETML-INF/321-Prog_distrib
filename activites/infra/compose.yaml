@@ -32,6 +32,7 @@ services:
     image: eclipse-mosquitto:2
     ports:
       - "1883:1883"   # accès direct (fiable)
+      - "9001:9001"   # WebSocket (console HUD)
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
     restart: unless-stopped
