@@ -25,8 +25,9 @@ mdc: true
 2. **Communication** - UDP, TCP, HTTP, bus de messages
 3. **Contrat** - le langage commun
 4. **Valider à la frontière** - refuser un message non conforme
-5. **Bilan** - avantages et inconvénients
-6. **Fallacies associées** - le piège et comment l'éviter
+5. **Faire évoluer un contrat** - strict ou tolérant, versions
+6. **Bilan** - avantages et inconvénients
+7. **Fallacies associées** - le piège et comment l'éviter
 
 ---
 layout: image
@@ -203,6 +204,68 @@ layout: section
 ---
 
 # Partie 5
+## Faire évoluer un contrat
+
+---
+
+# Piège : `additionalProperties: false`
+
+<v-click>
+<div class="mt-1 p-3 bg-red-700 rounded text-red-100">
+<b>Ce qui arrive :</b> Un champ inconnu rend le message invalide. Ajouter un champ <b>optionnel</b> casse tous les lecteurs qui n'ont pas encore changé : chaque évolution devient une rupture.
+</div>
+</v-click>
+
+<v-click>
+<div class="mt-2 p-3 bg-green-700 rounded text-green-200">
+<b>Mieux faire :</b> Valider ce dont on a besoin (<code>required</code>, types) et <b>ignorer le reste</b> : strict en émission, tolérant en réception.
+</div>
+</v-click>
+
+<v-click>
+<div class="mt-2 p-3 bg-blue-800 rounded text-blue-100">
+<b>Exemple :</b> El Choco ajoute <code>kind</code> à <code>presence</code> pour distinguer un service d'une famille. Avec le schéma strict de la v1, c'était impossible sans passer en <b>v2</b>.
+</div>
+</v-click>
+
+---
+
+# Ce qui change la version, ce qui ne la change pas
+
+| | Exemples | `v` |
+|---|---|---|
+| **Additif** | champ optionnel, nouveau `type`, nouveau topic | inchangée |
+| **Cassant** | retirer ou renommer un champ, changer son sens, rendre un champ obligatoire | **nouvelle `v`** |
+
+<v-click>
+<div class="mt-4 p-3 bg-yellow-600 rounded text-yellow-200">
+L'additif n'est gratuit que si les <b>lecteurs sont tolérants</b>. C'est décidé à l'écriture du schéma, pas après.
+</div>
+</v-click>
+
+---
+
+# Passer de N à N+1 sans casser personne
+
+<v-clicks>
+
+1. **Élargir** : les lecteurs acceptent N et N+1, les émetteurs publient encore N
+2. **Basculer** : tous les lecteurs sont prêts, les émetteurs publient N+1
+3. **Resserrer** : date de retrait annoncée, N lisible en **mode dégradé** avec avertissement, puis refusée
+
+</v-clicks>
+
+<v-click>
+<div class="mt-4 p-3 bg-blue-800 rounded text-blue-100">
+Pourquoi pas les deux versions à la fois ? Un topic <b>retenu</b> ne garde qu'un message, un <b>testament</b> est unique : la dernière écriture efface l'autre.
+</div>
+</v-click>
+
+---
+layout: section
+---
+
+# Partie 6
 ## Bilan
 
 ---
@@ -226,8 +289,8 @@ La résilience n'est pas automatique : savoir qu'un voisin est mort (LWT), rées
 layout: section
 ---
 
-# Fallacies associées
-## Le piège et comment l'éviter
+# Partie 7
+## Fallacies associées
 
 ---
 
@@ -291,7 +354,7 @@ layout: section
 
 <v-click>
 <div class="mt-2 p-3 bg-blue-800 rounded text-blue-100">
-<b>Exemple :</b> L'équipe Stock passe <code>qty</code> en <code>quantity</code> un vendredi soir. Avec un contrat versionné <code>v1</code> et <code>v2</code> en parallèle, personne ne tombe.
+<b>Exemple :</b> L'équipe Stock passe <code>qty</code> en <code>quantity</code> un vendredi soir. Avec un contrat versionné, les lecteurs acceptent <code>v1</code> et <code>v2</code> le temps de la transition : personne ne tombe.
 </div>
 </v-click>
 

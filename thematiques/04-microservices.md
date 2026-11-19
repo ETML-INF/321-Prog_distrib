@@ -9,6 +9,7 @@ Découper en services qui se parlent par messages, chacun avec son équipe et so
 - annoncer sa mort avec un LWT et expliquer le délai de détection d'une mort silencieuse
 - co-écrire un contrat de service avec d'autres équipes
 - valider un message contre son schéma et refuser (ignorer, logger, compter) un message non conforme
+- écrire un schéma qui laisse le contrat évoluer (pourquoi `additionalProperties: false` est un piège) et introduire une nouvelle version sans casser les lecteurs
 - implémenter un service d'annuaire et un service de journal
 
 **Fallacies :**
@@ -22,6 +23,7 @@ Voir [les 8 fallacies](../supports/fallacies.md).
 ## Théorie
 - [Microservices](../supports/microservice.md)
 - [Valider à la frontière](../supports/microservice.md#valider-a-la-frontiere)
+- [Faire évoluer un contrat](../supports/microservice.md#faire-evoluer-un-contrat) : strict ou tolérant, versions, mode dégradé
 - [Récap Kahoot NTP, sérialisation, microservices](https://create.kahoot.it/share/ntp-serialisation-et-microservice/1fdb114c-757c-4d9f-9fa5-b1310f47c90e)
 - Rappel MQTT : [LWT](../supports/mqtt.md#last-will-and-testament-lwt) et [Keep-Alive](../supports/mqtt.md#keep-alive)
 - Slides : [Microservices](../slides/microservice/){target="_blank"}

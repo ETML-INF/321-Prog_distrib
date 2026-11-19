@@ -30,7 +30,7 @@ Tout message est une enveloppe ([schéma](envelope.schema.json)) :
 
 | Champ | Rôle | Exploité en |
 |---|---|---|
-| `v` | version du contrat (`1`) | Sérialisation (évolution) |
+| `v` | version **majeure** du contrat (`1`) ; elle choisit les schémas, voir [Faire évoluer un contrat](../../supports/microservice.md#faire-evoluer-un-contrat) | Sérialisation (évolution) |
 | `id` | UUID unique du message | Idempotence |
 | `from` | nom du nœud émetteur | Sécurité (confiance) |
 | `to` | nom d'un nœud destinataire, ou `*` pour tous | adressage |
@@ -50,6 +50,7 @@ Exemple :
 1. Un message qui ne valide pas contre son schéma est **ignoré et loggé**. Il ne fait jamais planter un service.
 2. On est **strict en émission, tolérant en réception** : un champ inconnu dans un payload est ignoré, un champ obligatoire absent rend le message invalide.
    - Les payloads des types du noyau (`chat`, `presence`, `time`, `log`) et l'enveloppe ont `additionalProperties: false` : un champ inconnu y rend le message invalide. La tolérance vaut pour les **types inconnus** (règle 4, ignorés et loggés) et pour les types d'un scénario dont le schéma n'interdit pas les champs supplémentaires.
+   - ⚠️ **Attention : `additionalProperties: false` rend le contrat difficile à faire évoluer.** Tout lecteur strict rejette le moindre champ ajouté, même optionnel : il faut donc changer **tous les lecteurs avant le premier émetteur**, ou passer à une nouvelle version `v` (et alors les anciens lecteurs rejettent tout, d'un coup). Ce choix est volontaire ici (il rend la validation visible dans les exercices), mais **pour votre propre contrat de scénario, préférez des schémas qui tolèrent les champs inconnus**. Voir [Faire évoluer un contrat](../../supports/microservice.md#faire-evoluer-un-contrat) ; un cas réel dans le fil rouge [El Choco](../fil-rouge/elchoco/README.md) (le champ `kind` de `presence`).
 3. Un nœud ne publie que sous son propre nom (`from`), jusqu'à ce que la thématique Sécurité nous donne le moyen de le prouver.
 4. Un `type` pour lequel le nœud n'a pas de schéma est **ignoré et loggé**, comme un message invalide : le `type` est extensible, et sur un broker partagé vous recevrez des types d'autres scénarios.
 

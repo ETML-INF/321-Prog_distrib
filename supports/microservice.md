@@ -44,7 +44,63 @@ Un contrat écrit ne sert à rien s'il n'est pas **vérifié**. Le broker transp
 |---|---|---|
 | **`format` n'est pas assertif par défaut** | `"format":"uuid"` ou `"date-time"` acceptent n'importe quelle chaîne : `id:"nope"` est déclaré valide | Activer l'assertion de format dans la bibliothèque (Ajv : `ajv-formats` ; JsonSchema.Net : `RequireFormatValidation`) |
 | **Le testament est figé à la connexion** | Le LWT est préparé avant la panne : son `id` et son `ts` sont ceux de la connexion. Valide, mais périmé | Ne pas se fier au `ts` d'un testament ; ne pas dédoublonner sur son `id` |
-| **Strict ou tolérant** | Les payloads du noyau (`presence`, `time`…) interdisent les champs inconnus : un champ en trop les rend invalides | Voir la note sous la règle 2 du [contrat](../activites/contrats/README.md) : la tolérance vaut pour les types inconnus |
+| **Strict ou tolérant** | Les payloads du noyau (`presence`, `time`…) interdisent les champs inconnus (`additionalProperties: false`) : un champ en trop les rend invalides, et **chaque évolution devient une rupture** | Schémas tolérants pour vos propres types, voir [Faire évoluer un contrat](#faire-evoluer-un-contrat) |
+
+## Faire évoluer un contrat
+
+Un contrat vit plus longtemps que le code : tôt ou tard il faut y ajouter quelque chose, alors que les autres équipes n'ont pas encore mis à jour. Ce qui rend l'évolution facile ou douloureuse se décide **dès l'écriture du schéma**.
+
+### `additionalProperties: false`, le piège
+
+Ce mot-clé dit « tout champ non listé est une erreur ». C'est strict, donc rassurant, et c'est aussi ce qui **casse les évolutions** :
+
+```json
+{"type":"object","required":["state"],"additionalProperties":false,
+ "properties":{"state":{"enum":["open","closed","died"]}}}
+```
+
+L'émetteur ajoute un champ optionnel `kind` à `presence` : `{"state":"open","kind":"service"}`. Tout lecteur qui valide avec ce schéma **refuse** le message (il l'ignore, le logue et l'ajoute à `bad`, comme le demande la règle 1). Un champ pourtant **inoffensif** met hors service la moitié du réseau, et l'ordre de déploiement devient obligatoire : *tous les lecteurs d'abord, puis le premier émetteur*. Avec plusieurs administrateurs (fallacy 6), personne ne peut l'imposer.
+
+| | Schéma strict (`false`) | Schéma tolérant (par défaut) |
+|---|---|---|
+| Champ en plus | message refusé | ignoré |
+| Ajouter un champ optionnel | **rupture**, il faut une nouvelle version | sans conséquence |
+| Faute de frappe dans un nom de champ | détectée | passe inaperçue |
+| Ordre de déploiement | lecteurs avant émetteurs, obligatoire | libre |
+
+À retenir : être **strict en émission, tolérant en réception**. On valide ce dont on a besoin (`required`, types, valeurs) et on **ignore le reste**.
+
+### Ce qui change la version, ce qui ne la change pas
+
+`v` est la **version majeure** du contrat et choisit les schémas qui valident le message.
+
+- **Additif, `v` inchangée** : champ optionnel, nouveau `type`, nouveau topic. Possible seulement si les lecteurs sont tolérants.
+- **Cassant, nouvelle `v`** : retirer ou renommer un champ, changer son sens, rendre obligatoire un champ optionnel.
+
+### Introduire une nouvelle version : élargir, basculer, resserrer
+
+1. **Élargir** : les lecteurs acceptent `N` et `N+1` ; les émetteurs publient encore `N`. Rien ne change sur le réseau.
+2. **Basculer** : quand tous les lecteurs acceptent `N+1`, les émetteurs publient `N+1`.
+3. **Resserrer** : annoncer une **date de retrait** pour `N`. D'ici là, un message `N` est traité en **mode dégradé** (sans les nouveautés) et son émetteur est averti, une fois. À la date, `N` est refusée.
+
+Pourquoi ne pas publier les deux versions en même temps ? Sur un bus MQTT, un topic **retenu** ne garde qu'un message et un **testament** (LWT) est unique : la dernière écriture efface l'autre. On élargit donc les lecteurs d'abord.
+
+### Cas réel : El Choco, `presence` et `kind`
+
+Le HUD affichait le service `time` comme une famille : une présence `open` ne dit pas si l'émetteur est une chocolaterie ou un service. La solution propre est un champ `kind` dans le payload de `presence` :
+
+```json
+{"state":"open","kind":"service"}
+```
+
+Mais le schéma `presence` de la version 1 est strict : l'ajouter, c'était **casser** tous les lecteurs. Le contrat d'El Choco est donc passé en **v2** :
+
+| `v` | Statut | Ce que fait un lecteur |
+|---|---|---|
+| 2 | en vigueur | schémas **tolérants** (aucun `additionalProperties: false`), `presence` gagne `kind` (`service` ou `family`, défaut `family`) ; les champs inconnus sont ignorés |
+| 1 | dépréciée, **retirée le 12.12.2026** | lue en **mode dégradé** : validée contre les anciens schémas, sans `kind` (le HUD se rabat sur une liste d'identifiants connus), un avertissement par émetteur ; refusée à la date de retrait |
+
+Les émetteurs publient la v2 ; un seul endroit du code (un tableau `version → statut`) décide de ce que chaque lecteur accepte, de ce qu'il dégrade et de ce qu'il refuse.
 
 Pour essayer sans code : [JSONLint — JSON Schema](https://jsonlint.com/json-schema){target="_blank"} (schéma à gauche, données à droite ; il ne gère pas `format`, il n'accepte donc pas `envelope`).
 
